@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reference Master Geopolitical - Enterprise Dashboard</title>
+    <link href="https://unpkg.com/carbon-components@10.58.0/css/carbon-components.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            margin: 0;
+            background: #f4f4f4;
+        }
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .top-header {
+            background: #0078d4;
+            color: white;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .company-logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 0.5rem;
+            fill: white;
+        }
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .notification-icon, .user-avatar {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            fill: white;
+        }
+        .main-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .sidebar {
+            width: 256px;
+            background: #323130;
+            color: white;
+            overflow-y: auto;
+            border-right: 1px solid #605e5c;
+        }
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid #605e5c;
+            background: #292827;
+        }
+        .sidebar-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        .sidebar-subtitle {
+            font-size: 0.875rem;
+            color: #c6c6c6;
+            margin: 0.25rem 0 0 0;
+        }
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .nav-item {
+            border-bottom: 1px solid #605e5c;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            color: #c6c6c6;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+        .nav-link:hover {
+            background: #484644;
+            color: white;
+        }
+        .nav-link.active {
+            background: #0078d4;
+            color: white;
+            border-left: 3px solid #ffffff;
+        }
+        .nav-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 0.75rem;
+            fill: currentColor;
+        }
+        .submenu {
+            background: #484644;
+            display: none;
+        }
+        .submenu.open {
+            display: block;
+        }
+        .submenu-item {
+            padding-left: 2.5rem;
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: #faf9f8;
+            border-bottom: 1px solid #edebe9;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        .breadcrumb {
+            font-size: 0.875rem;
+            color: #525252;
+        }
+        .content-area {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin: 0 0 1rem 0;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0078d4;
+            margin: 0.5rem 0;
+        }
+        .stat-label {
+            font-size: 0.875rem;
+            color: #525252;
+        }
+        .btn-primary {
+            background: #0078d4;
+            color: white;
+            border: 1px solid #0078d4;
+            padding: 0.75rem 1.5rem;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.15s ease;
+        }
+        .btn-primary:hover {
+            background: #106ebe;
+            border-color: #106ebe;
+        }
+        .entity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        .entity-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .entity-card:hover {
+            border-color: #0078d4;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .entity-icon {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 0.75rem;
+            fill: #0078d4;
+        }
+        .entity-name {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem 0;
+        }
+        .entity-description {
+            font-size: 0.875rem;
+            color: #525252;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Header Bar -->
+        <header class="top-header">
+            <div class="company-logo">
+                <svg class="logo-icon" viewBox="0 0 24 24">
+                    <path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 11 5.16-1.26 9-5.45 9-11V7l-10-5z"/>
+                </svg>
+                LASANI FLUID POWER LLP
+            </div>
+            <div class="user-menu">
+                <svg class="notification-icon" viewBox="0 0 24 24">
+                    <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                </svg>
+                <svg class="user-avatar" viewBox="0 0 24 24">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+            </div>
+        </header>
+
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Sidebar Navigation -->
+            <nav class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="sidebar-title">LASANI Platform</h1>
+                <p class="sidebar-subtitle">Reference Master Geopolitical</p>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active" onclick="showDashboard()">
+                        <svg class="nav-icon" viewBox="0 0 16 16">
+                            <path d="M8 1L3 6v9h10V6L8 1zM7 14H5V9h2v5zm4 0H9V9h2v5zm1-6H4V6.5L8 2.5 12 6.5V8z"/>
+                        </svg>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="toggleSubmenu('masterdata-general')">
+                        <svg class="nav-icon" viewBox="0 0 16 16">
+                            <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 14c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6z"/>
+                        </svg>
+                        Master Data - General
+                    </a>
+                    <ul class="submenu" id="masterdata-general-submenu">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link submenu-item" onclick="loadEntity('countries')">Countries</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link submenu-item" onclick="loadEntity('regions')">Regions</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link submenu-item" onclick="loadEntity('subdivisions')">Country Subdivisions</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link submenu-item" onclick="loadEntity('languages')">Languages</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link submenu-item" onclick="loadEntity('locales')">Locales</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link submenu-item" onclick="loadEntity('timezones')">Timezones</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="toggleSubmenu('masterdata-commerce')">
+                        <svg class="nav-icon" viewBox="0 0 16 16">
+                            <path d="M2 2h12l-1 9H4L2 2zm2 2h8l-0.5 5H4.5L4 4zm8 8a2 2 0 11-4 0 2 2 0 014 0zm-6 0a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        Master Data - Commerce
+                    </a>
+                    <ul class="submenu" id="masterdata-commerce-submenu">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link submenu-item" onclick="loadEntity('currencies')">Currencies</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link submenu-item" onclick="loadEntity('fx-rates')">FX Rates</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link submenu-item" onclick="loadEntity('uom-classes')">UOM Classes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link submenu-item" onclick="loadEntity('uoms')">Units of Measure</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link submenu-item" onclick="loadEntity('incoterms')">INCOTERMS</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link submenu-item" onclick="loadEntity('tax-regimes')">Tax Regimes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link submenu-item" onclick="loadEntity('payment-terms')">Payment Terms</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <svg class="nav-icon" viewBox="0 0 16 16">
+                            <path d="M8 1l2.5 5h5.5l-4.5 3.5 1.5 5.5-4.5-3.5-4.5 3.5 1.5-5.5-4.5-3.5h5.5z"/>
+                        </svg>
+                        Analytics
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <svg class="nav-icon" viewBox="0 0 16 16">
+                            <path d="M8 1C4.1 1 1 4.1 1 8s3.1 7 7 7 7-3.1 7-7-3.1-7-7-7zm0 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5z"/>
+                            <path d="M8 4v4l3 2"/>
+                        </svg>
+                        System Health
+                    </a>
+                </li>
+            </ul>
+            </nav>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+            <header class="header">
+                <div>
+                    <h1 class="header-title" id="pageTitle">Dashboard</h1>
+                    <div class="breadcrumb" id="breadcrumb">Home / Dashboard</div>
+                </div>
+                <div>
+                    <button class="btn-primary" onclick="refreshData()">Refresh Data</button>
+                </div>
+            </header>
+
+            <div class="content-area" id="contentArea">
+                <!-- Dashboard Content -->
+                <div id="dashboardContent">
+                    <div class="dashboard-grid">
+                        <div class="card">
+                            <h3 class="card-title">Total Countries</h3>
+                            <div class="stat-number" id="totalCountries">195</div>
+                            <div class="stat-label">Active worldwide</div>
+                        </div>
+                        <div class="card">
+                            <h3 class="card-title">Languages</h3>
+                            <div class="stat-number" id="totalLanguages">7,139</div>
+                            <div class="stat-label">Supported languages</div>
+                        </div>
+                        <div class="card">
+                            <h3 class="card-title">Timezones</h3>
+                            <div class="stat-number" id="totalTimezones">424</div>
+                            <div class="stat-label">Global timezones</div>
+                        </div>
+                        <div class="card">
+                            <h3 class="card-title">Regions</h3>
+                            <div class="stat-number" id="totalRegions">249</div>
+                            <div class="stat-label">Geographic regions</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">Master Data - General</h3>
+                        <div class="entity-grid">
+                            <div class="entity-card" onclick="loadEntity('countries')">
+                                <svg class="entity-icon" viewBox="0 0 32 32">
+                                    <path d="M16 2C8.3 2 2 8.3 2 16s6.3 14 14 14 14-6.3 14-14S23.7 2 16 2zm0 26C9.4 28 4 22.6 4 16S9.4 4 16 4s12 5.4 12 12-5.4 12-12 12z"/>
+                                </svg>
+                                <h4 class="entity-name">Countries</h4>
+                                <p class="entity-description">Country data, ISO codes, and national information</p>
+                            </div>
+                            <div class="entity-card" onclick="loadEntity('regions')">
+                                <svg class="entity-icon" viewBox="0 0 32 32">
+                                    <path d="M28 6H4c-1.1 0-2 0.9-2 2v16c0 1.1 0.9 2 2 2h24c1.1 0 2-0.9 2-2V8c0-1.1-0.9-2-2-2zm0 18H4V8h24v16z"/>
+                                </svg>
+                                <h4 class="entity-name">Regions</h4>
+                                <p class="entity-description">Geographic regions and administrative divisions</p>
+                            </div>
+                            <div class="entity-card" onclick="loadEntity('subdivisions')">
+                                <svg class="entity-icon" viewBox="0 0 32 32">
+                                    <path d="M28 6H4c-1.1 0-2 0.9-2 2v16c0 1.1 0.9 2 2 2h24c1.1 0 2-0.9 2-2V8c0-1.1-0.9-2-2-2zm0 18H4V8h24v16z"/>
+                                    <path d="M15 9v14h2V9zm-7 0v14h2V9zm14 0v14h2V9z"/>
+                                </svg>
+                                <h4 class="entity-name">Country Subdivisions</h4>
+                                <p class="entity-description">States, provinces, and administrative divisions</p>
+                            </div>
+                            <div class="entity-card" onclick="loadEntity('languages')">
+                                <svg class="entity-icon" viewBox="0 0 32 32">
+                                    <path d="M26 4H6C4.9 4 4 4.9 4 6v20c0 1.1 0.9 2 2 2h20c1.1 0 2-0.9 2-2V6c0-1.1-0.9-2-2-2zm0 22H6V6h20v20z"/>
+                                </svg>
+                                <h4 class="entity-name">Languages</h4>
+                                <p class="entity-description">Language codes, names, and localization data</p>
+                            </div>
+                            <div class="entity-card" onclick="loadEntity('locales')">
+                                <svg class="entity-icon" viewBox="0 0 32 32">
+                                    <path d="M16 2C8.3 2 2 8.3 2 16s6.3 14 14 14 14-6.3 14-14S23.7 2 16 2zm0 26C9.4 28 4 22.6 4 16S9.4 4 16 4s12 5.4 12 12-5.4 12-12 12z"/>
+                                </svg>
+                                <h4 class="entity-name">Locales</h4>
+                                <p class="entity-description">Locale combinations of language and country</p>
+                            </div>
+                            <div class="entity-card" onclick="loadEntity('timezones')">
+                                <svg class="entity-icon" viewBox="0 0 32 32">
+                                    <path d="M16 2C8.3 2 2 8.3 2 16s6.3 14 14 14 14-6.3 14-14S23.7 2 16 2zm0 26C9.4 28 4 22.6 4 16S9.4 4 16 4s12 5.4 12 12-5.4 12-12 12z"/>
+                                    <path d="M16 8v8l6 4-1 1.5-7-4.5V8z"/>
+                                </svg>
+                                <h4 class="entity-name">Timezones</h4>
+                                <p class="entity-description">Global timezone data and UTC offsets</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">Master Data - Commerce</h3>
+                        <div class="entity-grid">
+                            <div class="entity-card" onclick="loadEntity('currencies')">
+                                <svg class="entity-icon" viewBox="0 0 32 32">
+                                    <path d="M16 2C8.3 2 2 8.3 2 16s6.3 14 14 14 14-6.3 14-14S23.7 2 16 2zm0 26C9.4 28 4 22.6 4 16S9.4 4 16 4s12 5.4 12 12-5.4 12-12 12z"/>
+                                    <path d="M12 10h8v2h-3v8h-2v-8h-3v-2z"/>
+                                </svg>
+                                <h4 class="entity-name">Currencies</h4>
+                                <p class="entity-description">ISO 4217 currency codes, symbols, and formatting</p>
+                            </div>
+                            <div class="entity-card" onclick="loadEntity('fx-rates')">
+                                <svg class="entity-icon" viewBox="0 0 32 32">
+                                    <path d="M28 6H4c-1.1 0-2 0.9-2 2v16c0 1.1 0.9 2 2 2h24c1.1 0 2-0.9 2-2V8c0-1.1-0.9-2-2-2zm0 18H4V8h24v16z"/>
+                                    <path d="M8 12l8 4-8 4v-8zm12-2h4v8h-4v-8z"/>
+                                </svg>
+                                <h4 class="entity-name">FX Rates</h4>
+                                <p class="entity-description">Foreign exchange rates and providers</p>
+                            </div>
+                            <div class="entity-card" onclick="loadEntity('uom-classes')">
+                                <svg class="entity-icon" viewBox="0 0 32 32">
+                                    <path d="M6 6h20v20H6V6zm2 2v16h16V8H8z"/>
+                                    <path d="M10 10h4v4h-4v-4zm6 0h4v4h-4v-4zm-6 6h4v4h-4v-4zm6 0h4v4h-4v-4z"/>
+                                </svg>
+                                <h4 class="entity-name">UOM Classes</h4>
+                                <p class="entity-description">Unit of measure categories (Mass, Length, Volume)</p>
+                            </div>
+                            <div class="entity-card" onclick="loadEntity('uoms')">
+                                <svg class="entity-icon" viewBox="0 0 32 32">
+                                    <path d="M4 4h24v24H4V4zm2 2v20h20V6H6z"/>
+                                    <path d="M8 8h16v2H8v-2zm0 4h16v2H8v-2zm0 4h12v2H8v-2zm0 4h8v2H8v-2z"/>
+                                </svg>
+                                <h4 class="entity-name">Units of Measure</h4>
+                                <p class="entity-description">UOM definitions and conversion factors</p>
+                            </div>
+                            <div class="entity-card" onclick="loadEntity('incoterms')">
+                                <svg class="entity-icon" viewBox="0 0 32 32">
+                                    <path d="M4 8h24v16H4V8zm2 2v12h20V10H6z"/>
+                                    <path d="M8 12h16v2H8v-2zm0 4h12v2H8v-2zm0 4h8v2H8v-2z"/>
+                                </svg>
+                                <h4 class="entity-name">INCOTERMS</h4>
+                                <p class="entity-description">International commercial terms (EXW, FOB, CIF)</p>
+                            </div>
+                            <div class="entity-card" onclick="loadEntity('tax-regimes')">
+                                <svg class="entity-icon" viewBox="0 0 32 32">
+                                    <path d="M16 2L4 8v12l12 6 12-6V8L16 2zm0 2.5L26 9v10.5l-10 5-10-5V9l10-4.5z"/>
+                                    <path d="M12 12h8v2h-8v-2zm0 4h6v2h-6v-2z"/>
+                                </svg>
+                                <h4 class="entity-name">Tax Regimes</h4>
+                                <p class="entity-description">VAT, GST, and sales tax configurations</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Content Area -->
+                <div id="dynamicContent" style="display: none;"></div>
+            </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        class GeopoliticalApp {
+            constructor() {
+                this.baseUrl = 'http://localhost:8081/api/v1';
+                this.currentEntity = null;
+                this.init();
+            }
+
+            init() {
+                this.loadDashboardStats();
+            }
+
+            async loadDashboardStats() {
+                try {
+                    // Load actual stats from API
+                    const stats = await this.fetchStats();
+                    this.updateDashboardStats(stats);
+                } catch (error) {
+                    console.log('Using default stats - API not available');
+                }
+            }
+
+            async fetchStats() {
+                const headers = {
+                    'X-Tenant-ID': 'default-tenant',
+                    'X-Request-ID': 'dashboard_' + Date.now()
+                };
+
+                const endpoints = [
+                    '/countries/stats',
+                    '/languages/stats', 
+                    '/timezones/stats',
+                    '/regions/stats'
+                ];
+
+                const results = {};
+                for (const endpoint of endpoints) {
+                    try {
+                        const response = await fetch(this.baseUrl + endpoint, { headers });
+                        if (response.ok) {
+                            const data = await response.json();
+                            results[endpoint] = data;
+                        }
+                    } catch (error) {
+                        console.log(`Failed to fetch ${endpoint}`);
+                    }
+                }
+                return results;
+            }
+
+            updateDashboardStats(stats) {
+                if (stats['/countries/stats']) {
+                    document.getElementById('totalCountries').textContent = stats['/countries/stats'].total || '195';
+                }
+                if (stats['/languages/stats']) {
+                    document.getElementById('totalLanguages').textContent = stats['/languages/stats'].total || '7,139';
+                }
+                if (stats['/timezones/stats']) {
+                    document.getElementById('totalTimezones').textContent = stats['/timezones/stats'].total || '424';
+                }
+                if (stats['/regions/stats']) {
+                    document.getElementById('totalRegions').textContent = stats['/regions/stats'].total || '249';
+                }
+            }
+
+            loadEntity(entityName) {
+                this.currentEntity = entityName;
+                this.updateNavigation(entityName);
+                this.updateBreadcrumb('Geopolitical Data', entityName);
+                this.updatePageTitle(entityName.charAt(0).toUpperCase() + entityName.slice(1));
+                
+                // Hide dashboard, show dynamic content
+                document.getElementById('dashboardContent').style.display = 'none';
+                document.getElementById('dynamicContent').style.display = 'block';
+                
+                // Load entity-specific content
+                this.loadEntityContent(entityName);
+            }
+
+            loadEntityContent(entityName) {
+                const content = document.getElementById('dynamicContent');
+                
+                // Create iframe to load entity-specific CRUD page
+                const crudUrl = this.getCrudUrl(entityName);
+                content.innerHTML = `
+                    <div style="height: calc(100vh - 200px); border: 1px solid #e0e0e0; border-radius: 4px; overflow: hidden;">
+                        <iframe src="${crudUrl}" style="width: 100%; height: 100%; border: none;"></iframe>
+                    </div>
+                `;
+            }
+
+            getCrudUrl(entityName) {
+                return `./entity-inline-editor.html?entity=${entityName}`;
+            }
+
+            showDashboard() {
+                this.currentEntity = null;
+                this.updateNavigation('dashboard');
+                this.updateBreadcrumb('Home', 'Dashboard');
+                this.updatePageTitle('Dashboard');
+                
+                // Show dashboard, hide dynamic content
+                document.getElementById('dashboardContent').style.display = 'block';
+                document.getElementById('dynamicContent').style.display = 'none';
+            }
+
+            updateNavigation(activeItem) {
+                // Remove active class from all nav links
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+
+                // Add active class to current item
+                if (activeItem === 'dashboard') {
+                    document.querySelector('.nav-link[onclick="showDashboard()"]').classList.add('active');
+                } else {
+                    document.querySelector(`.nav-link[onclick="loadEntity('${activeItem}')"]`).classList.add('active');
+                    
+                    // Open appropriate submenu based on entity type
+                    const generalEntities = ['countries', 'regions', 'subdivisions', 'languages', 'locales', 'timezones'];
+                    const commerceEntities = ['currencies', 'fx-rates', 'uom-classes', 'uoms', 'incoterms', 'tax-regimes', 'payment-terms'];
+                    
+                    if (generalEntities.includes(activeItem)) {
+                        document.getElementById('masterdata-general-submenu').classList.add('open');
+                    } else if (commerceEntities.includes(activeItem)) {
+                        document.getElementById('masterdata-commerce-submenu').classList.add('open');
+                    }
+                }
+            }
+
+            updateBreadcrumb(parent, current) {
+                document.getElementById('breadcrumb').textContent = `${parent} / ${current}`;
+            }
+
+            updatePageTitle(title) {
+                document.getElementById('pageTitle').textContent = title;
+            }
+
+            refreshData() {
+                if (this.currentEntity) {
+                    this.loadEntityContent(this.currentEntity);
+                } else {
+                    this.loadDashboardStats();
+                }
+            }
+        }
+
+        // Initialize the application
+        const app = new GeopoliticalApp();
+
+        // Global functions for navigation
+        function showDashboard() {
+            app.showDashboard();
+        }
+
+        function loadEntity(entityName) {
+            app.loadEntity(entityName);
+        }
+
+        function toggleSubmenu(menuId) {
+            const submenu = document.getElementById(menuId + '-submenu');
+            submenu.classList.toggle('open');
+        }
+
+        function refreshData() {
+            app.refreshData();
+        }
+    </script>
+</body>
+</html>

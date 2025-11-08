@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LASANI Platform - Reference Master Geopolitical</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8f9fa; overflow: hidden; }
+        
+        .top-header {
+            background: #0078d4;
+            color: white;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+        }
+        .company-name { font-size: 14px; font-weight: 600; }
+        .nav-tabs { display: flex; gap: 24px; font-size: 13px; }
+        .nav-tab { color: #ffffff; cursor: pointer; padding: 4px 8px; }
+        .nav-tab.active { background: rgba(255,255,255,0.2); border-radius: 2px; }
+        
+        .action-bar {
+            background: white;
+            border-bottom: 1px solid #e1dfdd;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+        }
+        .page-title { font-weight: 600; margin-right: 16px; }
+        .action-btn {
+            background: white;
+            border: 1px solid #8a8886;
+            padding: 4px 12px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .action-btn:hover { background: #f3f2f1; }
+        .action-btn.primary { background: #0078d4; color: white; border-color: #0078d4; }
+        
+        .main-layout { display: flex; height: calc(100vh - 96px); transition: height 0.3s ease; }
+        .main-layout.ribbon-open { height: calc(100vh - 176px); }
+        .main-layout.ribbon-pinned { height: calc(100vh - 176px); }
+        
+        /* Navigation Ribbon */
+        .nav-ribbon {
+            background: white;
+            border-bottom: 1px solid #e1dfdd;
+            position: relative;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+        .nav-ribbon.hidden { display: none; }
+        .nav-ribbon.unpinned {
+            position: absolute;
+            top: 48px;
+            left: 0;
+            right: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .nav-ribbon-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e1dfdd;
+        }
+        .nav-ribbon-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #323130;
+        }
+        .nav-ribbon-controls {
+            display: flex;
+            gap: 8px;
+        }
+        .pin-btn, .nav-ribbon .close-btn {
+            background: none;
+            border: none;
+            padding: 4px 8px;
+            cursor: pointer;
+            border-radius: 2px;
+            font-size: 12px;
+        }
+        .pin-btn:hover, .nav-ribbon .close-btn:hover {
+            background: #e1dfdd;
+        }
+        .pin-btn.pinned {
+            background: #0078d4;
+            color: white;
+        }
+        .nav-ribbon-content {
+            display: flex;
+            padding: 12px 16px;
+            gap: 32px;
+        }
+        .nav-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .nav-group-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #605e5c;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .nav-buttons {
+            display: flex;
+            gap: 4px;
+        }
+        .nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid #e1dfdd;
+            border-radius: 2px;
+            cursor: pointer;
+            min-width: 60px;
+            transition: all 0.2s ease;
+        }
+        .nav-btn:hover {
+            background: #f3f2f1;
+            border-color: #d2d0ce;
+        }
+        .nav-btn.active {
+            background: #0078d4;
+            color: white;
+            border-color: #0078d4;
+        }
+        .nav-btn-icon {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        .nav-btn-text {
+            font-size: 11px;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .filter-panel {
+            width: 240px;
+            background: white;
+            border-right: 1px solid #e1dfdd;
+            overflow-y: auto;
+        }
+        .filter-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e1dfdd;
+            font-weight: 600;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .close-btn { cursor: pointer; color: #605e5c; }
+        .filter-section { padding: 12px 16px; border-bottom: 1px solid #f3f2f1; }
+        .filter-item {
+            display: flex;
+            align-items: center;
+            padding: 6px 0;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .filter-item:hover { background: #f3f2f1; margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+        .filter-item.active { color: #0078d4; font-weight: 600; }
+        .filter-count { margin-left: auto; color: #605e5c; font-size: 12px; }
+        .filter-input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #8a8886;
+            border-radius: 2px;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+        
+        .data-grid { flex: 1; background: white; overflow: auto; }
+        .grid-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .grid-table th {
+            background: #f8f9fa;
+            border-bottom: 1px solid #e1dfdd;
+            padding: 8px 12px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .grid-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f3f2f1;
+            vertical-align: middle;
+        }
+        .grid-table tr:hover { background: #f8f9fa; }
+        .grid-table tr.selected { background: #deecf9; }
+        .grid-table tr.editing { background: #fff4ce; }
+        .editable-cell { position: relative; cursor: pointer; }
+        .editable-cell input, .editable-cell select {
+            width: 100%;
+            border: 1px solid #0078d4;
+            padding: 4px 6px;
+            font-size: 12px;
+            background: white;
+        }
+        
+        .status-active { color: #107c10; background: #dff6dd; padding: 2px 6px; border-radius: 2px; }
+        .status-inactive { color: #d83b01; background: #fed9cc; padding: 2px 6px; border-radius: 2px; }
+        
+        .details-panel {
+            width: 320px;
+            background: white;
+            border-left: 1px solid #e1dfdd;
+            overflow-y: auto;
+        }
+        .details-header {
+            padding: 16px;
+            border-bottom: 1px solid #e1dfdd;
+            background: #f8f9fa;
+        }
+        .details-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+        .details-subtitle { color: #605e5c; font-size: 12px; }
+        .details-content { padding: 16px; }
+        .detail-section { margin-bottom: 24px; }
+        .detail-section-title {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 12px;
+            color: #323130;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        .detail-label { color: #605e5c; }
+        .detail-value { font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div class="top-header">
+        <div class="company-name">LASANI Platform</div>
+        <div class="nav-tabs">
+            <div class="nav-tab" onclick="showRibbon('user')">User Management</div>
+            <div class="nav-tab" onclick="showRibbon('tenant')">Tenant Management</div>
+            <div class="nav-tab active" onclick="showRibbon('reference')">Reference Master</div>
+            <div class="nav-tab" onclick="showRibbon('commerce')">Commerce Master</div>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <span>🔔</span>
+            <span>👤</span>
+        </div>
+    </div>
+
+    <!-- Navigation Ribbons -->
+    <div class="nav-ribbon hidden" id="userRibbon">
+        <div class="nav-ribbon-header">
+            <div class="nav-ribbon-title">User Management</div>
+            <div class="nav-ribbon-controls">
+                <button class="pin-btn" onclick="togglePin('user')" title="Pin ribbon">📌</button>
+                <button class="close-btn" onclick="closeRibbon()">×</button>
+            </div>
+        </div>
+        <div class="nav-ribbon-content">
+            <div class="nav-group">
+                <div class="nav-group-title">Identity</div>
+                <div class="nav-buttons">
+                    <button class="nav-btn">
+                        <div class="nav-btn-icon">👤</div>
+                        <div class="nav-btn-text">Users</div>
+                    </button>
+                    <button class="nav-btn">
+                        <div class="nav-btn-icon">👥</div>
+                        <div class="nav-btn-text">Groups</div>
+                    </button>
+                    <button class="nav-btn">
+                        <div class="nav-btn-icon">🔐</div>
+                        <div class="nav-btn-text">Roles</div>
+                    </button>
+                </div>
+            </div>
+            <div class="nav-group">
+                <div class="nav-group-title">Security</div>
+                <div class="nav-buttons">
+                    <button class="nav-btn">
+                        <div class="nav-btn-icon">🔑</div>
+                        <div class="nav-btn-text">Permissions</div>
+                    </button>
+                    <button class="nav-btn">
+                        <div class="nav-btn-icon">🛡️</div>
+                        <div class="nav-btn-text">Sessions</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-ribbon hidden" id="tenantRibbon">
+        <div class="nav-ribbon-header">
+            <div class="nav-ribbon-title">Tenant Management</div>
+            <div class="nav-ribbon-controls">
+                <button class="pin-btn" onclick="togglePin('tenant')" title="Pin ribbon">📌</button>
+                <button class="close-btn" onclick="closeRibbon()">×</button>
+            </div>
+        </div>
+        <div class="nav-ribbon-content">
+            <div class="nav-group">
+                <div class="nav-group-title">Organization</div>
+                <div class="nav-buttons">
+                    <button class="nav-btn">
+                        <div class="nav-btn-icon">🏢</div>
+                        <div class="nav-btn-text">Tenants</div>
+                    </button>
+                    <button class="nav-btn">
+                        <div class="nav-btn-icon">📋</div>
+                        <div class="nav-btn-text">Subscriptions</div>
+                    </button>
+                    <button class="nav-btn">
+                        <div class="nav-btn-icon">⚙️</div>
+                        <div class="nav-btn-text">Settings</div>
+                    </button>
+                </div>
+            </div>
+            <div class="nav-group">
+                <div class="nav-group-title">Billing</div>
+                <div class="nav-buttons">
+                    <button class="nav-btn">
+                        <div class="nav-btn-icon">💳</div>
+                        <div class="nav-btn-text">Billing</div>
+                    </button>
+                    <button class="nav-btn">
+                        <div class="nav-btn-icon">📊</div>
+                        <div class="nav-btn-text">Usage</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-ribbon" id="referenceRibbon">
+        <div class="nav-ribbon-header">
+            <div class="nav-ribbon-title">Reference Master Geopolitical</div>
+            <div class="nav-ribbon-controls">
+                <button class="pin-btn" onclick="togglePin('reference')" title="Pin ribbon">📌</button>
+                <button class="close-btn" onclick="closeRibbon()">×</button>
+            </div>
+        </div>
+        <div class="nav-ribbon-content">
+            <div class="nav-group">
+                <div class="nav-group-title">Geopolitical</div>
+                <div class="nav-buttons">
+                    <button class="nav-btn active" onclick="switchEntity('countries')">
+                        <div class="nav-btn-icon">🌍</div>
+                        <div class="nav-btn-text">Countries</div>
+                    </button>
+                    <button class="nav-btn" onclick="switchEntity('regions')">
+                        <div class="nav-btn-icon">🗺️</div>
+                        <div class="nav-btn-text">Regions</div>
+                    </button>
+                    <button class="nav-btn" onclick="switchEntity('languages')">
+                        <div class="nav-btn-icon">🗣️</div>
+                        <div class="nav-btn-text">Languages</div>
+                    </button>
+                </div>
+            </div>
+            <div class="nav-group">
+                <div class="nav-group-title">Localization</div>
+                <div class="nav-buttons">
+                    <button class="nav-btn" onclick="switchEntity('timezones')">
+                        <div class="nav-btn-icon">🕐</div>
+                        <div class="nav-btn-text">Timezones</div>
+                    </button>
+                    <button class="nav-btn" onclick="switchEntity('subdivisions')">
+                        <div class="nav-btn-icon">🏛️</div>
+                        <div class="nav-btn-text">Subdivisions</div>
+                    </button>
+                    <button class="nav-btn" onclick="switchEntity('locales')">
+                        <div class="nav-btn-icon">🌐</div>
+                        <div class="nav-btn-text">Locales</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-ribbon hidden" id="commerceRibbon">
+        <div class="nav-ribbon-header">
+            <div class="nav-ribbon-title">Commerce Master</div>
+            <div class="nav-ribbon-controls">
+                <button class="pin-btn" onclick="togglePin('commerce')" title="Pin ribbon">📌</button>
+                <button class="close-btn" onclick="closeRibbon()">×</button>
+            </div>
+        </div>
+        <div class="nav-ribbon-content">
+            <div class="nav-group">
+                <div class="nav-group-title">Financial</div>
+                <div class="nav-buttons">
+                    <button class="nav-btn">
+                        <div class="nav-btn-icon">💰</div>
+                        <div class="nav-btn-text">Currencies</div>
+                    </button>
+                    <button class="nav-btn">
+                        <div class="nav-btn-icon">📈</div>
+                        <div class="nav-btn-text">FX Rates</div>
+                    </button>
+                    <button class="nav-btn">
+                        <div class="nav-btn-icon">💳</div>
+                        <div class="nav-btn-text">Payment Terms</div>
+                    </button>
+                </div>
+            </div>
+            <div class="nav-group">
+                <div class="nav-group-title">Trade</div>
+                <div class="nav-buttons">
+                    <button class="nav-btn">
+                        <div class="nav-btn-icon">📏</div>
+                        <div class="nav-btn-text">Units of Measure</div>
+                    </button>
+                    <button class="nav-btn">
+                        <div class="nav-btn-icon">🚚</div>
+                        <div class="nav-btn-text">Trade Terms</div>
+                    </button>
+                    <button class="nav-btn">
+                        <div class="nav-btn-icon">🏛️</div>
+                        <div class="nav-btn-text">Tax Regimes</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-bar">
+        <div class="page-title" id="pageTitle">Countries:</div>
+        <button class="action-btn">All ▼</button>
+        <button class="action-btn primary" onclick="addNew()">+ New</button>
+        <button class="action-btn" onclick="refreshData()">🔄 Refresh</button>
+        <button class="action-btn">Process ▼</button>
+        <button class="action-btn">Actions ▼</button>
+    </div>
+
+    <div class="main-layout">
+        <div class="filter-panel">
+            <div class="filter-header">
+                Entity Types
+                <span class="close-btn">×</span>
+            </div>
+            <div class="filter-section">
+                <div class="filter-item active" onclick="switchEntity('countries')">
+                    🌍 Countries
+                    <span class="filter-count" id="count-countries">0</span>
+                </div>
+                <div class="filter-item" onclick="switchEntity('regions')">
+                    🗺️ Regions
+                    <span class="filter-count" id="count-regions">0</span>
+                </div>
+                <div class="filter-item" onclick="switchEntity('languages')">
+                    🗣️ Languages
+                    <span class="filter-count" id="count-languages">0</span>
+                </div>
+                <div class="filter-item" onclick="switchEntity('timezones')">
+                    🕐 Timezones
+                    <span class="filter-count" id="count-timezones">0</span>
+                </div>
+                <div class="filter-item" onclick="switchEntity('subdivisions')">
+                    🏛️ Subdivisions
+                    <span class="filter-count" id="count-subdivisions">0</span>
+                </div>
+                <div class="filter-item" onclick="switchEntity('locales')">
+                    🌐 Locales
+                    <span class="filter-count" id="count-locales">0</span>
+                </div>
+            </div>
+            <div class="filter-section">
+                <div style="font-weight: 600; margin-bottom: 8px;">Views</div>
+                <div class="filter-item active" onclick="filterByView('all')">
+                    All
+                    <span class="filter-count" id="count-all">0</span>
+                </div>
+                <div class="filter-item" onclick="filterByView('active')">
+                    Active Only
+                    <span class="filter-count" id="count-active">0</span>
+                </div>
+                <div class="filter-item" onclick="filterByView('inactive')">
+                    Inactive Only
+                    <span class="filter-count" id="count-inactive">0</span>
+                </div>
+            </div>
+            <div class="filter-section">
+                <div style="font-weight: 600; margin-bottom: 8px;">Filter by...</div>
+                <div style="color: #605e5c; font-size: 12px; margin-bottom: 4px;">Search</div>
+                <input type="text" class="filter-input" id="searchFilter" placeholder="Search all fields..." oninput="applyFilters()">
+                <div id="dynamicFilters"></div>
+            </div>
+        </div>
+
+        <div class="data-grid">
+            <table class="grid-table">
+                <thead id="tableHeader"></thead>
+                <tbody id="entitiesTableBody">
+                    <tr><td colspan="10" style="text-align: center; padding: 40px;">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="details-panel">
+            <div class="details-header">
+                <div class="details-title" id="detailsTitle">Select an item</div>
+                <div class="details-subtitle" id="detailsSubtitle">Click on a row to view details</div>
+            </div>
+            <div class="details-content" id="detailsContent">
+                <div style="text-align: center; color: #605e5c; padding: 40px 20px;">
+                    <div style="font-size: 24px; margin-bottom: 10px;">📋</div>
+                    <div>Select a record to view detailed information</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const entityConfigs = {
+            countries: {
+                name: 'countries',
+                displayName: 'Countries',
+                columns: [
+                    { field: 'country_code', label: 'Code' },
+                    { field: 'country_name', label: 'Name' },
+                    { field: 'iso3_code', label: 'ISO3' },
+                    { field: 'capital_city', label: 'Capital' },
+                    { field: 'continent_code', label: 'Continent' },
+                    { field: 'phone_prefix', label: 'Phone' },
+                    { field: 'is_active', label: 'Status' }
+                ]
+            },
+            regions: {
+                name: 'regions',
+                displayName: 'Regions',
+                columns: [
+                    { field: 'region_code', label: 'Code' },
+                    { field: 'region_name', label: 'Name' },
+                    { field: 'region_type', label: 'Type' },
+                    { field: 'is_active', label: 'Status' }
+                ]
+            },
+            languages: {
+                name: 'languages',
+                displayName: 'Languages',
+                columns: [
+                    { field: 'language_code', label: 'Code' },
+                    { field: 'language_name', label: 'Name' },
+                    { field: 'iso3_code', label: 'ISO3' },
+                    { field: 'native_name', label: 'Native Name' },
+                    { field: 'direction', label: 'Direction' },
+                    { field: 'is_active', label: 'Status' }
+                ]
+            },
+            timezones: {
+                name: 'timezones',
+                displayName: 'Timezones',
+                columns: [
+                    { field: 'timezone_code', label: 'Code' },
+                    { field: 'timezone_name', label: 'Name' },
+                    { field: 'utc_offset_hours', label: 'UTC Offset' },
+                    { field: 'supports_dst', label: 'DST' },
+                    { field: 'is_active', label: 'Status' }
+                ]
+            },
+            subdivisions: {
+                name: 'subdivisions',
+                displayName: 'Country Subdivisions',
+                columns: [
+                    { field: 'subdivision_code', label: 'Code' },
+                    { field: 'subdivision_name', label: 'Name' },
+                    { field: 'subdivision_type', label: 'Type' },
+                    { field: 'is_active', label: 'Status' }
+                ]
+            },
+            locales: {
+                name: 'locales',
+                displayName: 'Locales',
+                columns: [
+                    { field: 'locale_code', label: 'Code' },
+                    { field: 'locale_name', label: 'Name' },
+                    { field: 'is_active', label: 'Status' }
+                ]
+            }
+        };
+
+        let currentEntity = 'countries';
+        let entities = [];
+        let selectedEntity = null;
+
+        let isRibbonPinned = false;
+        let currentRibbon = 'reference';
+        
+        function showRibbon(ribbonType) {
+            // Update active nav tab
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Hide all ribbons
+            document.querySelectorAll('.nav-ribbon').forEach(ribbon => ribbon.classList.add('hidden'));
+            
+            // Show selected ribbon
+            const ribbon = document.getElementById(ribbonType + 'Ribbon');
+            if (ribbon) {
+                ribbon.classList.remove('hidden');
+                currentRibbon = ribbonType;
+                
+                // Adjust main layout
+                const mainLayout = document.querySelector('.main-layout');
+                if (!isRibbonPinned) {
+                    mainLayout.classList.add('ribbon-open');
+                }
+            }
+        }
+        
+        function switchEntity(entityName) {
+            currentEntity = entityName;
+            const config = entityConfigs[entityName];
+            
+            // Update nav ribbon buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update filter panel
+            document.querySelectorAll('.filter-item').forEach(item => item.classList.remove('active'));
+            const filterItem = document.querySelector(`[onclick="switchEntity('${entityName}')"]`);
+            if (filterItem) filterItem.classList.add('active');
+            
+            document.getElementById('pageTitle').textContent = config.displayName + ':';
+            
+            const headerRow = config.columns.map(col => `<th>${col.label}</th>`).join('');
+            document.getElementById('tableHeader').innerHTML = `<tr>${headerRow}</tr>`;
+            
+            loadEntities();
+        }
+        
+        function togglePin(ribbonType) {
+            const ribbon = document.getElementById(ribbonType + 'Ribbon');
+            const pinBtn = event.target;
+            const mainLayout = document.querySelector('.main-layout');
+            
+            isRibbonPinned = !isRibbonPinned;
+            
+            if (isRibbonPinned) {
+                ribbon.classList.remove('unpinned');
+                pinBtn.classList.add('pinned');
+                pinBtn.title = 'Unpin ribbon';
+                mainLayout.classList.add('ribbon-pinned');
+            } else {
+                ribbon.classList.add('unpinned');
+                pinBtn.classList.remove('pinned');
+                pinBtn.title = 'Pin ribbon';
+                mainLayout.classList.remove('ribbon-pinned');
+                mainLayout.classList.add('ribbon-open');
+            }
+        }
+        
+        function closeRibbon() {
+            document.querySelectorAll('.nav-ribbon').forEach(ribbon => ribbon.classList.add('hidden'));
+            const mainLayout = document.querySelector('.main-layout');
+            mainLayout.classList.remove('ribbon-open', 'ribbon-pinned');
+            
+            // Remove active state from nav tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            isRibbonPinned = false;
+        }
+        
+        // Auto-hide unpinned ribbon when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!isRibbonPinned && !e.target.closest('.nav-ribbon') && !e.target.closest('.nav-tab')) {
+                const mainLayout = document.querySelector('.main-layout');
+                mainLayout.classList.remove('ribbon-open');
+            }
+        });
+
+        function loadEntities() {
+            fetch(`http://localhost:8081/api/v1/${currentEntity}`)
+                .then(response => response.json())
+                .then(data => {
+                    entities = data[currentEntity] || [];
+                    renderEntities();
+                    updateCounts();
+                    updateDynamicFilters();
+                })
+                .catch(error => {
+                    console.error('Error loading entities:', error);
+                    entities = [];
+                    renderEntities();
+                });
+        }
+
+        function renderEntities() {
+            const tbody = document.getElementById('entitiesTableBody');
+            const config = entityConfigs[currentEntity];
+            
+            if (entities.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${config.columns.length}" style="text-align: center;">No ${config.displayName.toLowerCase()} found</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = entities.map((entity, index) => {
+                const cells = config.columns.map(col => {
+                    let value = entity[col.field] || '';
+                    if (col.field === 'is_active' || col.field === 'supports_dst') {
+                        value = `<span class="status-${value ? 'active' : 'inactive'}">${value ? 'Active' : 'Inactive'}</span>`;
+                    }
+                    return `<td class="editable-cell" data-field="${col.field}" onclick="editCell(this, '${entity[config.columns[0].field]}')">${value}</td>`;
+                }).join('');
+                
+                return `<tr data-id="${entity[config.columns[0].field]}" onclick="selectEntity('${entity[config.columns[0].field]}')">${cells}</tr>`;
+            }).join('');
+        }
+
+        function editCell(cell, entityId) {
+            if (cell.querySelector('input') || cell.querySelector('select')) return;
+            
+            const field = cell.dataset.field;
+            const currentValue = cell.textContent.trim();
+            
+            let input;
+            if (field === 'is_active') {
+                input = `<select onblur="saveCell(this, '${entityId}', '${field}')" onchange="saveCell(this, '${entityId}', '${field}')"><option value="true" ${currentValue === 'Active' ? 'selected' : ''}>Active</option><option value="false" ${currentValue === 'Inactive' ? 'selected' : ''}>Inactive</option></select>`;
+            } else {
+                input = `<input type="text" value="${currentValue}" onblur="saveCell(this, '${entityId}', '${field}')" onkeypress="if(event.key==='Enter') saveCell(this, '${entityId}', '${field}')">`;  
+            }
+            
+            cell.innerHTML = input;
+            const inputElement = cell.querySelector('input, select');
+            if (inputElement.tagName === 'INPUT') inputElement.focus();
+        }
+        
+        function saveCell(input, entityId, field) {
+            const newValue = input.value;
+            const updateData = { [field]: field === 'is_active' ? newValue === 'true' : newValue };
+            
+            fetch(`http://localhost:8081/api/v1/${currentEntity}/${entityId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updateData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.updated) {
+                    loadEntities();
+                } else {
+                    alert('Update failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating:', error);
+                alert('Update failed');
+            });
+        }
+
+        function selectEntity(entityKey) {
+            document.querySelectorAll('.grid-table tr').forEach(row => row.classList.remove('selected'));
+            
+            const row = document.querySelector(`tr[data-id="${entityKey}"]`);
+            if (row) {
+                row.classList.add('selected');
+            }
+
+            const config = entityConfigs[currentEntity];
+            const entity = entities.find(e => e[config.columns[0].field] === entityKey);
+            
+            if (entity) {
+                selectedEntity = entity;
+                showEntityDetails(entity);
+            }
+        }
+
+        function showEntityDetails(entity) {
+            const config = entityConfigs[currentEntity];
+            
+            document.getElementById('detailsTitle').textContent = entity[config.columns[1].field] || 'Entity Details';
+            document.getElementById('detailsSubtitle').textContent = `${config.displayName} • ${entity[config.columns[0].field]}`;
+
+            const detailsHtml = `
+                <div class="detail-section">
+                    <div class="detail-section-title">General Information</div>
+                    ${config.columns.map(col => `
+                        <div class="detail-row">
+                            <span class="detail-label">${col.label}:</span>
+                            <span class="detail-value">${entity[col.field] || '-'}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="detail-section">
+                    <div class="detail-section-title">System Information</div>
+                    <div class="detail-row">
+                        <span class="detail-label">Created:</span>
+                        <span class="detail-value">${entity.created_at || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Updated:</span>
+                        <span class="detail-value">${entity.updated_at || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Version:</span>
+                        <span class="detail-value">${entity.version || '1'}</span>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('detailsContent').innerHTML = detailsHtml;
+        }
+
+        function updateCounts() {
+            const total = entities.length;
+            const active = entities.filter(e => e.is_active).length;
+            const inactive = total - active;
+
+            document.getElementById('count-all').textContent = total;
+            document.getElementById('count-active').textContent = active;
+            document.getElementById('count-inactive').textContent = inactive;
+            document.getElementById(`count-${currentEntity}`).textContent = total;
+        }
+
+        function updateDynamicFilters() {
+            const config = entityConfigs[currentEntity];
+            const filtersHtml = config.columns.slice(2).map(col => {
+                if (col.field === 'continent_code') {
+                    return `
+                        <div style="color: #605e5c; font-size: 12px; margin: 12px 0 4px 0;">${col.label}</div>
+                        <select class="filter-input" onchange="applyFilters()">
+                            <option value="">All ${col.label}</option>
+                            <option value="AF">Africa</option>
+                            <option value="AS">Asia</option>
+                            <option value="EU">Europe</option>
+                            <option value="NA">North America</option>
+                            <option value="SA">South America</option>
+                            <option value="OC">Oceania</option>
+                            <option value="AN">Antarctica</option>
+                        </select>
+                    `;
+                } else if (col.field !== 'is_active') {
+                    return `
+                        <div style="color: #605e5c; font-size: 12px; margin: 12px 0 4px 0;">${col.label}</div>
+                        <input type="text" class="filter-input" placeholder="Filter by ${col.label}" oninput="applyFilters()">
+                    `;
+                }
+                return '';
+            }).join('');
+            
+            document.getElementById('dynamicFilters').innerHTML = filtersHtml;
+        }
+
+        function filterByView(view) {
+            document.querySelectorAll('.filter-item').forEach(item => item.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            let filteredEntities = [...entities];
+            if (view === 'active') {
+                filteredEntities = entities.filter(e => e.is_active);
+            } else if (view === 'inactive') {
+                filteredEntities = entities.filter(e => !e.is_active);
+            }
+            
+            displayFilteredEntities(filteredEntities);
+        }
+        
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchFilter').value.toLowerCase();
+            let filteredEntities = entities.filter(entity => {
+                return Object.values(entity).some(value => 
+                    String(value).toLowerCase().includes(searchTerm)
+                );
+            });
+            
+            displayFilteredEntities(filteredEntities);
+        }
+        
+        function displayFilteredEntities(filteredEntities) {
+            const tbody = document.getElementById('entitiesTableBody');
+            const config = entityConfigs[currentEntity];
+            
+            if (filteredEntities.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${config.columns.length}" style="text-align: center;">No ${config.displayName.toLowerCase()} found</td></tr>`;
+                return;
+            }
+            
+            tbody.innerHTML = filteredEntities.map((entity, index) => {
+                const cells = config.columns.map(col => {
+                    let value = entity[col.field] || '';
+                    if (col.field === 'is_active' || col.field === 'supports_dst') {
+                        value = `<span class="status-${value ? 'active' : 'inactive'}">${value ? 'Active' : 'Inactive'}</span>`;
+                    }
+                    return `<td class="editable-cell" data-field="${col.field}" onclick="editCell(this, '${entity[config.columns[0].field]}')">${value}</td>`;
+                }).join('');
+                
+                return `<tr data-id="${entity[config.columns[0].field]}" onclick="selectEntity('${entity[config.columns[0].field]}')">${cells}</tr>`;
+            }).join('');
+        }
+
+        function addNew() {
+            const config = entityConfigs[currentEntity];
+            const newEntity = {};
+            config.columns.forEach(col => {
+                if (col.field === 'is_active') newEntity[col.field] = true;
+                else newEntity[col.field] = '';
+            });
+            
+            const tbody = document.getElementById('entitiesTableBody');
+            const newRow = document.createElement('tr');
+            newRow.className = 'editing';
+            newRow.innerHTML = config.columns.map(col => {
+                let input = '';
+                if (col.field === 'is_active') {
+                    input = `<select><option value="true">Active</option><option value="false">Inactive</option></select>`;
+                } else {
+                    input = `<input type="text" value="" placeholder="Enter ${col.label}">`;
+                }
+                return `<td class="editable-cell">${input}</td>`;
+            }).join('');
+            
+            tbody.insertBefore(newRow, tbody.firstChild);
+        }
+
+        function refreshData() {
+            loadEntities();
+        }
+
+        // Initialize
+        document.querySelector('.main-layout').classList.add('ribbon-open');
+        switchEntity('countries');
+    </script>
+</body>
+</html>

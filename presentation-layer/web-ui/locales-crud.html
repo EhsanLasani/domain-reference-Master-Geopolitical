@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Locales CRUD</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: #2c3e50; color: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+        .btn { padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #2980b9; }
+        table { width: 100%; background: white; border-collapse: collapse; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #34495e; color: white; }
+        tr:hover { background: #f8f9fa; }
+        .loading { text-align: center; padding: 40px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Locales Management</h1>
+            <p>Locale combinations of language and country</p>
+        </div>
+        
+        <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+            <input type="text" id="searchInput" placeholder="Search locales (code, name, language, country)..." style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; width: 350px;">
+            <button class="btn" onclick="searchLocales()">Search</button>
+            <button class="btn" onclick="clearSearch()" style="background: #95a5a6; color: white;">Clear</button>
+            <button class="btn" onclick="loadLocales()">Refresh</button>
+            <button class="btn" onclick="addLocale()">+ Add Locale</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Language</th>
+                    <th>Country</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="localesTable">
+                <tr><td colspan="6" class="loading">Click "Load Locales" to fetch data...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function loadLocales() {
+            const tbody = document.getElementById('localesTable');
+            tbody.innerHTML = '<tr><td colspan="6" class="loading">Loading locales...</td></tr>';
+            
+            try {
+                const response = await fetch('http://localhost:8081/api/v1/locales', {
+                    headers: { 'X-Tenant-ID': 'default-tenant' }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const locales = data.locales || [];
+                    
+                    if (locales.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No locales found</td></tr>';
+                        return;
+                    }
+                    
+                    tbody.innerHTML = locales.map(locale => `
+                        <tr>
+                            <td>${locale.locale_code}</td>
+                            <td>${locale.locale_name}</td>
+                            <td>${locale.language_name || '-'}</td>
+                            <td>${locale.country_name || '-'}</td>
+                            <td><span style="color: ${locale.is_active ? '#27ae60' : '#e74c3c'}">${locale.is_active ? 'Active' : 'Inactive'}</span></td>
+                            <td>
+                                <button class="btn" style="padding: 5px 10px;">Edit</button>
+                                <button class="btn" style="padding: 5px 10px; background: #e74c3c;">Delete</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #e74c3c;">Failed to load locales</td></tr>';
+                }
+            } catch (error) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #e74c3c;">Error loading locales</td></tr>';
+            }
+        }
+
+        function addLocale() {
+            alert('Add Locale functionality - Coming soon!');
+        }
+
+        function searchLocales() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            const tbody = document.getElementById('localesTable');
+            const rows = tbody.querySelectorAll('tr');
+            
+            if (searchTerm === '') {
+                rows.forEach(row => row.style.display = '');
+                return;
+            }
+            
+            let visibleCount = 0;
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                let found = false;
+                
+                // Search in all table cells
+                cells.forEach(cell => {
+                    if (cell.textContent.toLowerCase().includes(searchTerm)) {
+                        found = true;
+                    }
+                });
+                
+                if (found) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            const tbody = document.getElementById('localesTable');
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach(row => row.style.display = '');
+        }
+
+        // Auto-load locales when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadLocales();
+            
+            // Add search on Enter key
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') searchLocales();
+            });
+        });
+    </script>
+</body>
+</html>

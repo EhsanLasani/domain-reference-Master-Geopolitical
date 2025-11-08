@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LASANI FLUID POWER LLP - Sales Orders</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8f9fa; overflow: hidden; }
+        
+        /* Top Navigation Bar */
+        .top-nav {
+            background: #323130;
+            color: white;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            border-bottom: 1px solid #605e5c;
+        }
+        .nav-left { display: flex; align-items: center; gap: 16px; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .company-name { font-size: 14px; font-weight: 600; }
+        .nav-icon { width: 20px; height: 20px; cursor: pointer; fill: white; }
+        
+        /* Main Layout */
+        .main-container { display: flex; height: calc(100vh - 48px); }
+        
+        /* Left Sidebar */
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid #e1dfdd;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Module Navigation */
+        .module-nav {
+            background: #f3f2f1;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e1dfdd;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+        }
+        .module-tab {
+            padding: 6px 12px;
+            background: white;
+            border: 1px solid #d2d0ce;
+            border-radius: 2px;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .module-tab.active { background: #0078d4; color: white; border-color: #0078d4; }
+        
+        /* Views Section */
+        .views-section {
+            padding: 16px;
+            border-bottom: 1px solid #e1dfdd;
+        }
+        .views-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #323130;
+        }
+        .view-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            margin-bottom: 2px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .view-item:hover { background: #f3f2f1; }
+        .view-item.active { background: #deecf9; color: #0078d4; }
+        .view-count {
+            background: #605e5c;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+        .view-item.active .view-count { background: #0078d4; }
+        
+        /* Filters Section */
+        .filters-section {
+            padding: 16px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .filter-group {
+            margin-bottom: 16px;
+        }
+        .filter-label {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #323130;
+        }
+        .filter-input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #d2d0ce;
+            border-radius: 2px;
+            font-size: 12px;
+        }
+        
+        /* Main Content Area */
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+        
+        /* Action Bar */
+        .action-bar {
+            background: #faf9f8;
+            border-bottom: 1px solid #e1dfdd;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .action-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .action-group::after {
+            content: '';
+            width: 1px;
+            height: 20px;
+            background: #d2d0ce;
+            margin-left: 12px;
+        }
+        .action-group:last-child::after { display: none; }
+        .action-btn {
+            padding: 6px 12px;
+            border: 1px solid #d2d0ce;
+            background: white;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .action-btn:hover { background: #f3f2f1; }
+        .action-btn.primary { background: #0078d4; color: white; border-color: #0078d4; }
+        
+        /* Data Grid */
+        .data-grid {
+            flex: 1;
+            overflow: auto;
+        }
+        .grid-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .grid-table th {
+            background: #f8f9fa;
+            border-bottom: 1px solid #d2d0ce;
+            padding: 8px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #323130;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .grid-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f3f2f1;
+            vertical-align: middle;
+        }
+        .grid-table tr:hover { background: #f8f9fa; }
+        .grid-table tr.selected { background: #deecf9; }
+        
+        /* Status Badges */
+        .status-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        .status-open { background: #cff4fc; color: #0f5132; }
+        .status-released { background: #f8d7da; color: #721c24; }
+        
+        /* Right Details Panel */
+        .details-panel {
+            width: 320px;
+            background: white;
+            border-left: 1px solid #e1dfdd;
+            display: flex;
+            flex-direction: column;
+        }
+        .details-header {
+            padding: 16px;
+            border-bottom: 1px solid #e1dfdd;
+            background: #faf9f8;
+        }
+        .details-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .details-subtitle {
+            font-size: 12px;
+            color: #605e5c;
+        }
+        .details-content {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+        }
+        .detail-section {
+            margin-bottom: 24px;
+        }
+        .detail-section-title {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #323130;
+            border-bottom: 1px solid #e1dfdd;
+            padding-bottom: 4px;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        .detail-label { color: #605e5c; }
+        .detail-value { font-weight: 500; }
+        
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <div class="top-nav">
+        <div class="nav-left">
+            <svg class="nav-icon" viewBox="0 0 24 24">
+                <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+            </svg>
+            <span class="company-name">LASANI FLUID POWER LLP</span>
+        </div>
+        <div class="nav-right">
+            <svg class="nav-icon" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+            <svg class="nav-icon" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+            <svg class="nav-icon" viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Left Sidebar -->
+        <div class="sidebar">
+            <!-- Module Navigation -->
+            <div class="module-nav">
+                <div class="module-tab">Finance</div>
+                <div class="module-tab">Cash Management</div>
+                <div class="module-tab active">Sales</div>
+                <div class="module-tab">Purchasing</div>
+                <div class="module-tab">India Taxation</div>
+            </div>
+
+            <!-- Views Section -->
+            <div class="views-section">
+                <div class="views-title">Views</div>
+                <div class="view-item active">
+                    <span>All</span>
+                    <span class="view-count">47</span>
+                </div>
+                <div class="view-item">
+                    <span>Shipped Not Invoiced</span>
+                    <span class="view-count">12</span>
+                </div>
+                <div class="view-item">
+                    <span>Open Sales Orders</span>
+                    <span class="view-count">23</span>
+                </div>
+                <div class="view-item">
+                    <span>Ready to Ship</span>
+                    <span class="view-count">8</span>
+                </div>
+                <div class="view-item">
+                    <span>Partially Shipped</span>
+                    <span class="view-count">4</span>
+                </div>
+                <div class="view-item">
+                    <span>Delayed</span>
+                    <span class="view-count">0</span>
+                </div>
+                <div class="view-item">
+                    <span>Released</span>
+                    <span class="view-count">15</span>
+                </div>
+            </div>
+
+            <!-- Filters Section -->
+            <div class="filters-section">
+                <div class="views-title">Filter list by...</div>
+                <div class="filter-group">
+                    <div class="filter-label">Date Filter</div>
+                    <input type="date" class="filter-input" value="2024-01-25">
+                </div>
+                <div class="filter-group">
+                    <div class="filter-label">Customer</div>
+                    <input type="text" class="filter-input" placeholder="Filter by customer">
+                </div>
+                <div class="filter-group">
+                    <div class="filter-label">Status</div>
+                    <select class="filter-input">
+                        <option>All Status</option>
+                        <option>Open</option>
+                        <option>Released</option>
+                        <option>Shipped</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <div class="filter-label">Amount Range</div>
+                    <input type="number" class="filter-input" placeholder="Min amount">
+                    <input type="number" class="filter-input" placeholder="Max amount" style="margin-top: 4px;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="content-area">
+            <!-- Action Bar -->
+            <div class="action-bar">
+                <div class="action-group">
+                    <button class="action-btn primary">
+                        <i class="fas fa-plus"></i> New
+                    </button>
+                    <button class="action-btn">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+                <div class="action-group">
+                    <button class="action-btn">Process</button>
+                    <button class="action-btn">Release</button>
+                    <button class="action-btn">Posting</button>
+                </div>
+                <div class="action-group">
+                    <button class="action-btn">Print/Send</button>
+                    <button class="action-btn">Order</button>
+                    <button class="action-btn">Actions</button>
+                </div>
+                <div class="action-group">
+                    <button class="action-btn">Related</button>
+                    <button class="action-btn">Reports</button>
+                    <button class="action-btn">Automate</button>
+                </div>
+            </div>
+
+            <!-- Data Grid -->
+            <div class="data-grid">
+                <table class="grid-table">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Sell-to Customer No.</th>
+                            <th>Sell-to Customer Name</th>
+                            <th>External Document No.</th>
+                            <th>Location Code</th>
+                            <th>Assigned User ID</th>
+                            <th>Document Date</th>
+                            <th>Status</th>
+                            <th>Completely Shipped</th>
+                            <th>Amount Shipped Not Invoiced (LCY)</th>
+                            <th>Amount Shipped Not Invoiced Incl. VAT</th>
+                            <th>Amount</th>
+                            <th>Amount Inc.</th>
+                        </tr>
+                    </thead>
+                    <tbody id="salesOrdersTable">
+                        <tr class="selected" onclick="selectRow(this, 'SO-0000251')">
+                            <td>SO-0000251</td>
+                            <td>200175</td>
+                            <td>INTEGRATED OIL AND GAS SERVICES PVT LTD</td>
+                            <td>LA/0268/24</td>
+                            <td>WH-100001</td>
+                            <td></td>
+                            <td>27-06-2024</td>
+                            <td><span class="status-badge status-open">Open</span></td>
+                            <td>No</td>
+                            <td>0.00</td>
+                            <td>0.00</td>
+                            <td>0.00</td>
+                            <td>0</td>
+                        </tr>
+                        <tr onclick="selectRow(this, 'SO-0000254')">
+                            <td>SO-0000254</td>
+                            <td>200001</td>
+                            <td>AAKAR PIPE AND TUBES</td>
+                            <td></td>
+                            <td>WH-100001</td>
+                            <td></td>
+                            <td>08-01-2025</td>
+                            <td><span class="status-badge status-open">Open</span></td>
+                            <td>No</td>
+                            <td>0.00</td>
+                            <td>0.00</td>
+                            <td>0.00</td>
+                            <td>0</td>
+                        </tr>
+                        <tr onclick="selectRow(this, 'SO-0000274')">
+                            <td>SO-0000274</td>
+                            <td>200097</td>
+                            <td>SPECIAL STEEL STORES</td>
+                            <td>LA/0287/24</td>
+                            <td>WH-100001</td>
+                            <td></td>
+                            <td>04-07-2024</td>
+                            <td><span class="status-badge status-open">Open</span></td>
+                            <td>No</td>
+                            <td>0.00</td>
+                            <td>0.00</td>
+                            <td>0.00</td>
+                            <td>0</td>
+                        </tr>
+                        <tr onclick="selectRow(this, 'SO-0000345')">
+                            <td>SO-0000345</td>
+                            <td>200214</td>
+                            <td>Jektuna Tools and Gauges Private Limited</td>
+                            <td>LA/0354/24</td>
+                            <td>WH-100001</td>
+                            <td></td>
+                            <td>25-07-2024</td>
+                            <td><span class="status-badge status-released">Released</span></td>
+                            <td>No</td>
+                            <td>6,080.00</td>
+                            <td>6,080.00</td>
+                            <td>6,230.00</td>
+                            <td>2</td>
+                        </tr>
+                        <tr onclick="selectRow(this, 'SO-0000378')">
+                            <td>SO-0000378</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>WH-100001</td>
+                            <td></td>
+                            <td>17-01-2025</td>
+                            <td><span class="status-badge status-open">Open</span></td>
+                            <td>No</td>
+                            <td>0.00</td>
+                            <td>0.00</td>
+                            <td>0.00</td>
+                            <td>0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right Details Panel -->
+        <div class="details-panel">
+            <div class="details-header">
+                <div class="details-title" id="detailsTitle">Customer Statistics</div>
+                <div class="details-subtitle" id="detailsSubtitle">Customer No. 200175</div>
+            </div>
+            <div class="details-content" id="detailsContent">
+                <div class="detail-section">
+                    <div class="detail-section-title">Customer Statistics</div>
+                    <div class="detail-row">
+                        <span class="detail-label">Customer No.</span>
+                        <span class="detail-value">200175</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Balance (LCY)</span>
+                        <span class="detail-value">6,30,203.17</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Balance (LCY) As Vendor</span>
+                        <span class="detail-value">0.00</span>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-section-title">Sales</div>
+                    <div class="detail-row">
+                        <span class="detail-label">Outstanding Orders (LCY)</span>
+                        <span class="detail-value">0.00</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Shipped Not Invoiced (LCY)</span>
+                        <span class="detail-value">0.00</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Outstanding Invoices (LCY)</span>
+                        <span class="detail-value">0.00</span>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-section-title">Service</div>
+                    <div class="detail-row">
+                        <span class="detail-label">Outstanding Serv. Orders (LCY)</span>
+                        <span class="detail-value">0.00</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Serv.Shipped Not Invoiced(LCY)</span>
+                        <span class="detail-value">0.00</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Outstanding Serv.Invoices(LCY)</span>
+                        <span class="detail-value">0.00</span>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-section-title">Payments</div>
+                    <div class="detail-row">
+                        <span class="detail-label">Payments (LCY)</span>
+                        <span class="detail-value">7,14,976.00</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Refunds (LCY)</span>
+                        <span class="detail-value">0.00</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Last Payment Receipt Date</span>
+                        <span class="detail-value">31-01-2025</span>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-section-title">Customer Details</div>
+                    <div class="detail-row">
+                        <span class="detail-label">Customer No.</span>
+                        <span class="detail-value">200175</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Name</span>
+                        <span class="detail-value">INTEGRATED OIL AND GAS SERVICES PVT LTD</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Phone No.</span>
+                        <span class="detail-value">7767800942</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Email</span>
+                        <span class="detail-value">purchase@iogs.net.in</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Credit Limit (LCY)</span>
+                        <span class="detail-value" style="color: #d13438;">5,00,000.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function selectRow(row, orderNo) {
+            // Remove selection from all rows
+            document.querySelectorAll('.grid-table tr').forEach(r => r.classList.remove('selected'));
+            
+            // Add selection to clicked row
+            row.classList.add('selected');
+            
+            // Update details panel based on selected row
+            updateDetailsPanel(orderNo);
+        }
+
+        function updateDetailsPanel(orderNo) {
+            const detailsTitle = document.getElementById('detailsTitle');
+            const detailsSubtitle = document.getElementById('detailsSubtitle');
+            
+            detailsTitle.textContent = 'Sales Order Details';
+            detailsSubtitle.textContent = `Order No. ${orderNo}`;
+            
+            // You can add more dynamic content updates here
+        }
+
+        // Initialize with first row selected
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstRow = document.querySelector('.grid-table tbody tr');
+            if (firstRow) {
+                firstRow.classList.add('selected');
+            }
+        });
+    </script>
+</body>
+</html>

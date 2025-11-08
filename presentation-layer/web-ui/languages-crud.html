@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Languages CRUD</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: #2c3e50; color: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+        .btn { padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #2980b9; }
+        table { width: 100%; background: white; border-collapse: collapse; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #34495e; color: white; }
+        tr:hover { background: #f8f9fa; }
+        .loading { text-align: center; padding: 40px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Languages Management</h1>
+            <p>Language codes, names, and localization data</p>
+        </div>
+        
+        <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+            <input type="text" id="searchInput" placeholder="Search languages (code, name, native)..." style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; width: 300px;">
+            <button class="btn" onclick="searchLanguages()">Search</button>
+            <button class="btn" onclick="clearSearch()" style="background: #95a5a6; color: white;">Clear</button>
+            <button class="btn" onclick="loadLanguages()">Refresh</button>
+            <button class="btn" onclick="addLanguage()">+ Add Language</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>ISO3</th>
+                    <th>Native Name</th>
+                    <th>Direction</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="languagesTable">
+                <tr><td colspan="7" class="loading">Click "Load Languages" to fetch data...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function loadLanguages() {
+            const tbody = document.getElementById('languagesTable');
+            tbody.innerHTML = '<tr><td colspan="7" class="loading">Loading languages...</td></tr>';
+            
+            try {
+                const response = await fetch('http://localhost:8081/api/v1/languages', {
+                    headers: { 'X-Tenant-ID': 'default-tenant' }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const languages = data.languages || [];
+                    
+                    if (languages.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No languages found</td></tr>';
+                        return;
+                    }
+                    
+                    tbody.innerHTML = languages.map(lang => `
+                        <tr>
+                            <td>${lang.language_code}</td>
+                            <td>${lang.language_name}</td>
+                            <td>${lang.iso3_code || '-'}</td>
+                            <td>${lang.native_name || '-'}</td>
+                            <td>${lang.direction || 'LTR'}</td>
+                            <td><span style="color: ${lang.is_active ? '#27ae60' : '#e74c3c'}">${lang.is_active ? 'Active' : 'Inactive'}</span></td>
+                            <td>
+                                <button class="btn" style="padding: 5px 10px;">Edit</button>
+                                <button class="btn" style="padding: 5px 10px; background: #e74c3c;">Delete</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #e74c3c;">Failed to load languages</td></tr>';
+                }
+            } catch (error) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #e74c3c;">Error loading languages</td></tr>';
+            }
+        }
+
+        function addLanguage() {
+            alert('Add Language functionality - Coming soon!');
+        }
+
+        function searchLanguages() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            const tbody = document.getElementById('languagesTable');
+            const rows = tbody.querySelectorAll('tr');
+            
+            if (searchTerm === '') {
+                rows.forEach(row => row.style.display = '');
+                return;
+            }
+            
+            let visibleCount = 0;
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                let found = false;
+                
+                // Search in all table cells (code, name, iso3, native, direction, status)
+                cells.forEach(cell => {
+                    if (cell.textContent.toLowerCase().includes(searchTerm)) {
+                        found = true;
+                    }
+                });
+                
+                if (found) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            const tbody = document.getElementById('languagesTable');
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach(row => row.style.display = '');
+        }
+
+        // Auto-load languages when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadLanguages();
+            
+            // Add search on Enter key
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') searchLanguages();
+            });
+        });
+    </script>
+</body>
+</html>

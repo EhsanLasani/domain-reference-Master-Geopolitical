@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # Load Balancer
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - app
+
+  # Scalable Application Instances
+  app:
+    build: .
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=lasani
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres123
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - SERVER_PORT=8081
+    depends_on:
+      - postgres
+      - redis
+    deploy:
+      replicas: 3  # Scale to 3 instances
+
+  # Shared Database (Single Instance)
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: lasani
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Shared Cache (Single Instance)
+  redis:
+    image: redis:7-alpine
+
+volumes:
+  postgres_data:

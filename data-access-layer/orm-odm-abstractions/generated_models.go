@@ -201,7 +201,7 @@ type Language struct {
 }
 
 // TableName methods for GORM
-func (Country) TableName() string { return "ref.countries" }
-func (Region) TableName() string { return "ref.regions" }
-func (Timezone) TableName() string { return "ref.timezones" }
-func (Language) TableName() string { return "ref.languages" }
+func (Country) TableName() string { return "domain_reference_master_geopolitical.countries" }
+func (Region) TableName() string { return "domain_reference_master_geopolitical.regions" }
+func (Timezone) TableName() string { return "domain_reference_master_geopolitical.timezones" }
+func (Language) TableName() string { return "domain_reference_master_geopolitical.languages" }

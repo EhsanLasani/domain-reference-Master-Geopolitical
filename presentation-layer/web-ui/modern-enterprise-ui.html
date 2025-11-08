@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LASANI FLUID POWER LLP - Sales Orders</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8f9fa; overflow: hidden; }
+        
+        /* Top Header */
+        .top-header {
+            background: #0078d4;
+            color: white;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+        }
+        .company-name { font-size: 14px; font-weight: 600; }
+        .nav-tabs { display: flex; gap: 24px; font-size: 13px; }
+        .nav-tab { color: #ffffff; cursor: pointer; padding: 4px 8px; }
+        .nav-tab.active { background: rgba(255,255,255,0.2); border-radius: 2px; }
+        
+        /* Action Bar */
+        .action-bar {
+            background: white;
+            border-bottom: 1px solid #e1dfdd;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+        }
+        .page-title { font-weight: 600; margin-right: 16px; }
+        .action-btn {
+            background: white;
+            border: 1px solid #8a8886;
+            padding: 4px 12px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .action-btn:hover { background: #f3f2f1; }
+        .action-btn.primary { background: #0078d4; color: white; border-color: #0078d4; }
+        
+        /* Main Layout */
+        .main-layout { display: flex; height: calc(100vh - 96px); }
+        
+        /* Left Filter Panel */
+        .filter-panel {
+            width: 240px;
+            background: white;
+            border-right: 1px solid #e1dfdd;
+            overflow-y: auto;
+        }
+        .filter-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e1dfdd;
+            font-weight: 600;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .close-btn { cursor: pointer; color: #605e5c; }
+        .filter-section { padding: 12px 16px; border-bottom: 1px solid #f3f2f1; }
+        .filter-item {
+            display: flex;
+            align-items: center;
+            padding: 6px 0;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .filter-item:hover { background: #f3f2f1; margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+        .filter-item.active { color: #0078d4; font-weight: 600; }
+        .filter-count { margin-left: auto; color: #605e5c; font-size: 12px; }
+        .filter-input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #8a8886;
+            border-radius: 2px;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+        
+        /* Data Grid */
+        .data-grid { flex: 1; background: white; overflow: auto; }
+        .grid-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .grid-table th {
+            background: #f8f9fa;
+            border-bottom: 1px solid #e1dfdd;
+            padding: 8px 12px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .grid-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f3f2f1;
+            vertical-align: middle;
+        }
+        .grid-table tr:hover { background: #f8f9fa; }
+        .grid-table tr.selected { background: #deecf9; }
+        .grid-table tr.editing { background: #fff3cd; }
+        
+        /* Inline Editing */
+        .editable-cell { position: relative; }
+        .editable-cell input, .editable-cell select {
+            width: 100%;
+            border: 1px solid #0078d4;
+            padding: 4px 6px;
+            font-size: 12px;
+            background: white;
+            display: none;
+        }
+        .editable-cell.editing input, .editable-cell.editing select { display: block; }
+        .editable-cell.editing .display-value { display: none; }
+        
+        /* Status Badges */
+        .status-open { color: #107c10; background: #dff6dd; padding: 2px 6px; border-radius: 2px; }
+        .status-released { color: #d83b01; background: #fed9cc; padding: 2px 6px; border-radius: 2px; }
+        
+        /* Right Details Panel */
+        .details-panel {
+            width: 320px;
+            background: white;
+            border-left: 1px solid #e1dfdd;
+            overflow-y: auto;
+        }
+        .details-header {
+            padding: 16px;
+            border-bottom: 1px solid #e1dfdd;
+            background: #f8f9fa;
+        }
+        .details-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+        .details-subtitle { color: #605e5c; font-size: 12px; }
+        .details-content { padding: 16px; }
+        .detail-section { margin-bottom: 24px; }
+        .detail-section-title {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 12px;
+            color: #323130;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        .detail-label { color: #605e5c; }
+        .detail-value { font-weight: 500; }
+        
+        /* Action Icons */
+        .action-icons { display: flex; gap: 4px; }
+        .action-icon {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        .action-icon:hover { background: #f3f2f1; }
+        .action-icon.edit { color: #0078d4; }
+        .action-icon.save { color: #107c10; }
+        .action-icon.cancel { color: #605e5c; }
+        .action-icon.delete { color: #d83b01; }
+    </style>
+</head>
+<body>
+    <!-- Top Header -->
+    <div class="top-header">
+        <div class="company-name">LASANI FLUID POWER LLP</div>
+        <div class="nav-tabs">
+            <div class="nav-tab">Finance</div>
+            <div class="nav-tab">Cash Management</div>
+            <div class="nav-tab active">Sales</div>
+            <div class="nav-tab">Purchasing</div>
+            <div class="nav-tab">India Taxation</div>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <span>🔔</span>
+            <span>👤</span>
+        </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+        <div class="page-title">Sales Orders:</div>
+        <button class="action-btn">All ▼</button>
+        <button class="action-btn primary" onclick="addNewOrder()">+ New</button>
+        <button class="action-btn" onclick="refreshData()">🔄 Refresh</button>
+        <button class="action-btn">Process ▼</button>
+        <button class="action-btn">Release ▼</button>
+        <button class="action-btn">Actions ▼</button>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <!-- Left Filter Panel -->
+        <div class="filter-panel">
+            <div class="filter-header">
+                Views
+                <span class="close-btn">×</span>
+            </div>
+            <div class="filter-section">
+                <div class="filter-item active" onclick="filterByView('all')">
+                    All
+                    <span class="filter-count" id="count-all">0</span>
+                </div>
+                <div class="filter-item" onclick="filterByView('shipped-not-invoiced')">
+                    Shipped Not Invoiced
+                    <span class="filter-count" id="count-shipped">0</span>
+                </div>
+                <div class="filter-item" onclick="filterByView('open')">
+                    Open Sales Orders
+                    <span class="filter-count" id="count-open">0</span>
+                </div>
+                <div class="filter-item" onclick="filterByView('ready-to-ship')">
+                    Ready to Ship
+                    <span class="filter-count" id="count-ready">0</span>
+                </div>
+                <div class="filter-item" onclick="filterByView('released')">
+                    Released
+                    <span class="filter-count" id="count-released">0</span>
+                </div>
+            </div>
+            <div class="filter-section">
+                <div style="font-weight: 600; margin-bottom: 8px;">Filter list by...</div>
+                <div style="color: #605e5c; font-size: 12px; margin-bottom: 4px;">Customer</div>
+                <input type="text" class="filter-input" id="customerFilter" placeholder="Filter by customer" onchange="applyFilters()">
+                <div style="color: #605e5c; font-size: 12px; margin: 12px 0 4px 0;">Status</div>
+                <select class="filter-input" id="statusFilter" onchange="applyFilters()">
+                    <option value="">All Status</option>
+                    <option value="Open">Open</option>
+                    <option value="Released">Released</option>
+                </select>
+                <div style="color: #605e5c; font-size: 12px; margin: 12px 0 4px 0;">Due Date</div>
+                <input type="date" class="filter-input" id="dueDateFilter" onchange="applyFilters()">
+            </div>
+        </div>
+
+        <!-- Data Grid -->
+        <div class="data-grid">
+            <table class="grid-table">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable('no')">No.</th>
+                        <th onclick="sortTable('customer_no')">Customer No.</th>
+                        <th onclick="sortTable('customer_name')">Customer Name</th>
+                        <th onclick="sortTable('external_doc')">External Document</th>
+                        <th onclick="sortTable('location')">Location</th>
+                        <th onclick="sortTable('date')">Date</th>
+                        <th onclick="sortTable('status')">Status</th>
+                        <th onclick="sortTable('amount')">Amount</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersTableBody">
+                    <tr><td colspan="9" style="text-align: center; padding: 40px;">Loading orders...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Right Details Panel -->
+        <div class="details-panel">
+            <div class="details-header">
+                <div class="details-title" id="detailsTitle">Details</div>
+                <div class="details-subtitle" id="detailsSubtitle">Select an order to view details</div>
+            </div>
+            <div class="details-content" id="detailsContent">
+                <div style="text-align: center; color: #605e5c; padding: 40px 20px;">
+                    Select a sales order to view customer statistics and details
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ModernEnterpriseUI {
+            constructor() {
+                this.baseUrl = 'http://localhost:8081/api/v1';
+                this.tenantId = 'default-tenant';
+                this.orders = [];
+                this.filteredOrders = [];
+                this.editingRow = null;
+                this.currentView = 'all';
+                this.filters = {};
+                this.init();
+            }
+
+            init() {
+                this.loadOrders();
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                // Double-click to edit cells
+                document.addEventListener('dblclick', (e) => {
+                    if (e.target.closest('.grid-table td') && !e.target.closest('.action-icons')) {
+                        this.startInlineEdit(e.target.closest('tr'), e.target.closest('td'));
+                    }
+                });
+
+                // Enter to save, Escape to cancel
+                document.addEventListener('keydown', (e) => {
+                    if (this.editingRow) {
+                        if (e.key === 'Enter') {
+                            this.saveInlineEdit();
+                        } else if (e.key === 'Escape') {
+                            this.cancelInlineEdit();
+                        }
+                    }
+                });
+            }
+
+            async loadOrders() {
+                try {
+                    // Generate sample data since API might not be available
+                    this.orders = this.generateSampleOrders();
+                    this.filteredOrders = [...this.orders];
+                    this.renderOrders();
+                    this.updateFilterCounts();
+                } catch (error) {
+                    console.error('Failed to load orders:', error);
+                    this.orders = this.generateSampleOrders();
+                    this.filteredOrders = [...this.orders];
+                    this.renderOrders();
+                    this.updateFilterCounts();
+                }
+            }
+
+            generateSampleOrders() {
+                const customers = [
+                    { no: '200175', name: 'INTEGRATED OIL AND GAS SERVICES PVT LTD' },
+                    { no: '200001', name: 'AAKAR PIPE AND TUBES' },
+                    { no: '200097', name: 'SPECIAL STEEL STORES' },
+                    { no: '200214', name: 'Jektuna Tools and Gauges Private Limited' },
+                    { no: '200205', name: 'BEST STEEL TUBES' }
+                ];
+
+                const statuses = ['Open', 'Released'];
+                const orders = [];
+
+                for (let i = 1; i <= 25; i++) {
+                    const customer = customers[Math.floor(Math.random() * customers.length)];
+                    const status = statuses[Math.floor(Math.random() * statuses.length)];
+                    const amount = Math.floor(Math.random() * 50000);
+                    
+                    orders.push({
+                        no: `SO-${String(i).padStart(7, '0')}`,
+                        customer_no: customer.no,
+                        customer_name: customer.name,
+                        external_doc: `LA/${String(Math.floor(Math.random() * 999)).padStart(3, '0')}/24`,
+                        location: 'WH-100001',
+                        date: new Date(2024, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toLocaleDateString(),
+                        status: status,
+                        amount: amount.toLocaleString(),
+                        shipped: Math.random() > 0.7 ? 'Yes' : 'No'
+                    });
+                }
+
+                return orders;
+            }
+
+            renderOrders() {
+                const tbody = document.getElementById('ordersTableBody');
+                
+                if (this.filteredOrders.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">No orders found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = this.filteredOrders.map((order, index) => `
+                    <tr onclick="selectOrder('${order.no}')" data-order="${order.no}">
+                        <td class="editable-cell" data-field="no">
+                            <span class="display-value">${order.no}</span>
+                            <input type="text" value="${order.no}">
+                        </td>
+                        <td class="editable-cell" data-field="customer_no">
+                            <span class="display-value">${order.customer_no}</span>
+                            <input type="text" value="${order.customer_no}">
+                        </td>
+                        <td class="editable-cell" data-field="customer_name">
+                            <span class="display-value">${order.customer_name}</span>
+                            <input type="text" value="${order.customer_name}">
+                        </td>
+                        <td class="editable-cell" data-field="external_doc">
+                            <span class="display-value">${order.external_doc}</span>
+                            <input type="text" value="${order.external_doc}">
+                        </td>
+                        <td class="editable-cell" data-field="location">
+                            <span class="display-value">${order.location}</span>
+                            <input type="text" value="${order.location}">
+                        </td>
+                        <td class="editable-cell" data-field="date">
+                            <span class="display-value">${order.date}</span>
+                            <input type="date" value="${new Date(order.date).toISOString().split('T')[0]}">
+                        </td>
+                        <td class="editable-cell" data-field="status">
+                            <span class="display-value">
+                                <span class="status-${order.status.toLowerCase()}">${order.status}</span>
+                            </span>
+                            <select>
+                                <option value="Open" ${order.status === 'Open' ? 'selected' : ''}>Open</option>
+                                <option value="Released" ${order.status === 'Released' ? 'selected' : ''}>Released</option>
+                            </select>
+                        </td>
+                        <td class="editable-cell" data-field="amount">
+                            <span class="display-value">${order.amount}</span>
+                            <input type="number" value="${order.amount.replace(/,/g, '')}">
+                        </td>
+                        <td class="action-icons">
+                            <button class="action-icon edit" onclick="editOrder('${order.no}'); event.stopPropagation();" title="Edit">✏️</button>
+                            <button class="action-icon delete" onclick="deleteOrder('${order.no}'); event.stopPropagation();" title="Delete">🗑️</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            startInlineEdit(row, cell) {
+                if (this.editingRow && this.editingRow !== row) {
+                    this.cancelInlineEdit();
+                }
+
+                this.editingRow = row;
+                row.classList.add('editing');
+                cell.classList.add('editing');
+                
+                const input = cell.querySelector('input, select');
+                if (input) {
+                    input.focus();
+                    if (input.type === 'text') {
+                        input.select();
+                    }
+                }
+            }
+
+            saveInlineEdit() {
+                if (!this.editingRow) return;
+
+                const orderNo = this.editingRow.dataset.order;
+                const order = this.orders.find(o => o.no === orderNo);
+                
+                if (order) {
+                    // Update order data from inputs
+                    this.editingRow.querySelectorAll('.editable-cell').forEach(cell => {
+                        const field = cell.dataset.field;
+                        const input = cell.querySelector('input, select');
+                        if (input && field) {
+                            order[field] = input.value;
+                            // Update display value
+                            const displayValue = cell.querySelector('.display-value');
+                            if (field === 'status') {
+                                displayValue.innerHTML = `<span class="status-${input.value.toLowerCase()}">${input.value}</span>`;
+                            } else if (field === 'amount') {
+                                displayValue.textContent = parseInt(input.value).toLocaleString();
+                            } else {
+                                displayValue.textContent = input.value;
+                            }
+                        }
+                    });
+                }
+
+                this.cancelInlineEdit();
+                this.showSaveNotification();
+            }
+
+            cancelInlineEdit() {
+                if (this.editingRow) {
+                    this.editingRow.classList.remove('editing');
+                    this.editingRow.querySelectorAll('.editable-cell').forEach(cell => {
+                        cell.classList.remove('editing');
+                    });
+                    this.editingRow = null;
+                }
+            }
+
+            showSaveNotification() {
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #107c10;
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 4px;
+                    z-index: 1000;
+                    font-size: 14px;
+                `;
+                notification.textContent = '✓ Changes saved successfully';
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 3000);
+            }
+
+            selectOrder(orderNo) {
+                // Remove previous selection
+                document.querySelectorAll('.grid-table tr').forEach(row => row.classList.remove('selected'));
+                
+                // Select current row
+                const row = document.querySelector(`tr[data-order="${orderNo}"]`);
+                if (row) {
+                    row.classList.add('selected');
+                    this.showOrderDetails(orderNo);
+                }
+            }
+
+            showOrderDetails(orderNo) {
+                const order = this.orders.find(o => o.no === orderNo);
+                if (!order) return;
+
+                document.getElementById('detailsTitle').textContent = 'Customer Statistics';
+                document.getElementById('detailsSubtitle').textContent = `Order ${orderNo}`;
+
+                const detailsHtml = `
+                    <div class="detail-section">
+                        <div class="detail-section-title">Customer Statistics</div>
+                        <div class="detail-row">
+                            <span class="detail-label">Customer No.</span>
+                            <span class="detail-value">${order.customer_no}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Balance (LCY)</span>
+                            <span class="detail-value">6,30,203.17</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Balance (LCY) As Vendor</span>
+                            <span class="detail-value">0.00</span>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-section-title">Sales</div>
+                        <div class="detail-row">
+                            <span class="detail-label">Outstanding Orders (LCY)</span>
+                            <span class="detail-value">${order.amount}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Shipped Not Invoiced (LCY)</span>
+                            <span class="detail-value">0.00</span>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-section-title">Customer Details</div>
+                        <div class="detail-row">
+                            <span class="detail-label">Name</span>
+                            <span class="detail-value">${order.customer_name}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Status</span>
+                            <span class="detail-value">${order.status}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Location</span>
+                            <span class="detail-value">${order.location}</span>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('detailsContent').innerHTML = detailsHtml;
+            }
+
+            filterByView(view) {
+                this.currentView = view;
+                
+                // Update active filter item
+                document.querySelectorAll('.filter-item').forEach(item => item.classList.remove('active'));
+                event.target.classList.add('active');
+                
+                this.applyFilters();
+            }
+
+            applyFilters() {
+                this.filteredOrders = this.orders.filter(order => {
+                    // View filter
+                    if (this.currentView === 'open' && order.status !== 'Open') return false;
+                    if (this.currentView === 'released' && order.status !== 'Released') return false;
+                    if (this.currentView === 'shipped-not-invoiced' && order.shipped !== 'Yes') return false;
+                    
+                    // Customer filter
+                    const customerFilter = document.getElementById('customerFilter').value.toLowerCase();
+                    if (customerFilter && !order.customer_name.toLowerCase().includes(customerFilter)) return false;
+                    
+                    // Status filter
+                    const statusFilter = document.getElementById('statusFilter').value;
+                    if (statusFilter && order.status !== statusFilter) return false;
+                    
+                    return true;
+                });
+                
+                this.renderOrders();
+                this.updateFilterCounts();
+            }
+
+            updateFilterCounts() {
+                document.getElementById('count-all').textContent = this.orders.length;
+                document.getElementById('count-open').textContent = this.orders.filter(o => o.status === 'Open').length;
+                document.getElementById('count-released').textContent = this.orders.filter(o => o.status === 'Released').length;
+                document.getElementById('count-shipped').textContent = this.orders.filter(o => o.shipped === 'Yes').length;
+                document.getElementById('count-ready').textContent = this.orders.filter(o => o.status === 'Open' && o.shipped === 'No').length;
+            }
+
+            sortTable(column) {
+                this.filteredOrders.sort((a, b) => {
+                    if (a[column] < b[column]) return -1;
+                    if (a[column] > b[column]) return 1;
+                    return 0;
+                });
+                this.renderOrders();
+            }
+        }
+
+        // Initialize the application
+        const app = new ModernEnterpriseUI();
+
+        // Global functions
+        function selectOrder(orderNo) {
+            app.selectOrder(orderNo);
+        }
+
+        function editOrder(orderNo) {
+            const row = document.querySelector(`tr[data-order="${orderNo}"]`);
+            const firstCell = row.querySelector('.editable-cell');
+            app.startInlineEdit(row, firstCell);
+        }
+
+        function deleteOrder(orderNo) {
+            if (confirm(`Delete order ${orderNo}?`)) {
+                app.orders = app.orders.filter(o => o.no !== orderNo);
+                app.applyFilters();
+                app.showSaveNotification();
+            }
+        }
+
+        function filterByView(view) {
+            app.filterByView(view);
+        }
+
+        function applyFilters() {
+            app.applyFilters();
+        }
+
+        function addNewOrder() {
+            const newOrder = {
+                no: `SO-${String(app.orders.length + 1).padStart(7, '0')}`,
+                customer_no: '',
+                customer_name: 'New Customer',
+                external_doc: '',
+                location: 'WH-100001',
+                date: new Date().toLocaleDateString(),
+                status: 'Open',
+                amount: '0',
+                shipped: 'No'
+            };
+            
+            app.orders.unshift(newOrder);
+            app.applyFilters();
+            
+            // Start editing the new row
+            setTimeout(() => {
+                const newRow = document.querySelector(`tr[data-order="${newOrder.no}"]`);
+                const firstCell = newRow.querySelector('.editable-cell');
+                app.startInlineEdit(newRow, firstCell);
+            }, 100);
+        }
+
+        function refreshData() {
+            app.loadOrders();
+        }
+
+        function sortTable(column) {
+            app.sortTable(column);
+        }
+    </script>
+</body>
+</html>

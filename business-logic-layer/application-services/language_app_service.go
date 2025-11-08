@@ -1,0 +1,80 @@
+package applicationservices
+
+import (
+	"context"
+	"github.com/google/uuid"
+	repositories "github.com/EhsanLasani/domain-reference-Master-Geopolitical/data-access-layer/repositories-daos"
+	models "github.com/EhsanLasani/domain-reference-Master-Geopolitical/internal/models"
+	"github.com/EhsanLasani/domain-reference-Master-Geopolitical/internal/xcut/logging"
+)
+
+type LanguageAppService struct {
+	languageRepo *repositories.LanguageRepository
+	logger       *logging.StructuredLogger
+}
+
+func NewLanguageAppService(languageRepo *repositories.LanguageRepository, logger *logging.StructuredLogger) *LanguageAppService {
+	return &LanguageAppService{
+		languageRepo: languageRepo,
+		logger:       logger,
+	}
+}
+
+func (s *LanguageAppService) CreateLanguage(ctx context.Context, tenantID string, input *models.LanguageInput) (*models.Language, error) {
+	s.logger.Info(ctx, "Creating language", logging.Field{Key: "language_code", Value: input.LanguageCode})
+	
+	language := &models.Language{
+		LanguageID:   uuid.New(),
+		LanguageCode: input.LanguageCode,
+		LanguageName: input.LanguageName,
+		ISO3Code:     input.ISO3Code,
+		NativeName:   input.NativeName,
+		Direction:    input.Direction,
+	}
+	
+	if language.Direction == "" {
+		language.Direction = "LTR"
+	}
+	
+	if err := s.languageRepo.Create(ctx, tenantID, language); err != nil {
+		s.logger.Error(ctx, "Failed to create language", err)
+		return nil, err
+	}
+	
+	return language, nil
+}
+
+func (s *LanguageAppService) GetLanguage(ctx context.Context, tenantID string, id uuid.UUID) (*models.Language, error) {
+	return s.languageRepo.GetByID(ctx, tenantID, id)
+}
+
+func (s *LanguageAppService) GetLanguageByCode(ctx context.Context, tenantID string, code string) (*models.Language, error) {
+	return s.languageRepo.GetByCode(ctx, tenantID, code)
+}
+
+func (s *LanguageAppService) ListLanguages(ctx context.Context, tenantID string, limit, offset int) ([]*models.Language, int64, error) {
+	return s.languageRepo.List(ctx, tenantID, limit, offset)
+}
+
+func (s *LanguageAppService) UpdateLanguage(ctx context.Context, tenantID string, id uuid.UUID, input *models.LanguageInput) (*models.Language, error) {
+	language, err := s.languageRepo.GetByID(ctx, tenantID, id)
+	if err != nil {
+		return nil, err
+	}
+	
+	language.LanguageName = input.LanguageName
+	language.ISO3Code = input.ISO3Code
+	language.NativeName = input.NativeName
+	language.Direction = input.Direction
+	language.Version++
+	
+	if err := s.languageRepo.Update(ctx, tenantID, language); err != nil {
+		return nil, err
+	}
+	
+	return language, nil
+}
+
+func (s *LanguageAppService) DeleteLanguage(ctx context.Context, tenantID string, id uuid.UUID) error {
+	return s.languageRepo.Delete(ctx, tenantID, id)
+}

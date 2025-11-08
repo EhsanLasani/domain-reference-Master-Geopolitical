@@ -1,51 +1,97 @@
-// Package bootstrap implements dependency injection and application initialization
+// Package bootstrap provides dependency injection and application container
 package bootstrap
 
 import (
-	"context"
+	"database/sql"
 	"fmt"
 
+	"github.com/EhsanLasani/domain-reference-Master-Geopolitical/internal/xcut/cache"
 	"github.com/EhsanLasani/domain-reference-Master-Geopolitical/internal/xcut/config"
 	"github.com/EhsanLasani/domain-reference-Master-Geopolitical/internal/xcut/logging"
-	"github.com/EhsanLasani/domain-reference-Master-Geopolitical/internal/xcut/security"
 	"github.com/EhsanLasani/domain-reference-Master-Geopolitical/internal/xcut/tracing"
+	"github.com/EhsanLasani/domain-reference-Master-Geopolitical/data-access-layer/database"
+	"github.com/EhsanLasani/domain-reference-Master-Geopolitical/internal/models"
+	applicationservices "github.com/EhsanLasani/domain-reference-Master-Geopolitical/business-logic-layer/application-services"
+	repositories "github.com/EhsanLasani/domain-reference-Master-Geopolitical/data-access-layer/repositories-daos"
 )
 
+// Container holds all application dependencies
 type Container struct {
-	Config      *config.Config
-	Logger      logging.Logger
-	Tracer      tracing.Tracer
-	AuthService security.AuthService
+	Config            *config.Config
+	Logger            logging.Logger
+	Tracer            tracing.Tracer
+	Cache             cache.Cache
+	DB                *sql.DB
+	DBManager         *database.Database
+	CountryRepository repositories.CountryRepositoryInterface
+	CountryAppService *applicationservices.CountryAppService
+	RegionRepository  *repositories.RegionRepository
+	RegionAppService  *applicationservices.RegionAppService
+	LanguageRepository *repositories.LanguageRepository
+	LanguageAppService *applicationservices.LanguageAppService
 }
 
-func InitializeContainer(ctx context.Context) (*Container, error) {
-	// Load configuration
-	cfg, err := config.LoadConfig()
-	if err != nil {
-		return nil, fmt.Errorf("failed to load configuration: %w", err)
-	}
-
-	// Initialize logger
-	logger := logging.NewStructuredLogger("geopolitical-service")
-	logger.Info(ctx, "Configuration loaded successfully")
-
+// NewContainer creates and initializes the application container
+func NewContainer(cfg *config.Config, logger logging.Logger) (*Container, error) {
 	// Initialize tracing
 	tracer := tracing.NewTracer("geopolitical-service")
 
-	// Initialize authentication service
-	authService := security.NewJWTAuthService(cfg.Auth.JWTSecret)
+	// Initialize cache
+	cacheClient := cache.NewRedisCache(cfg.Redis.Host, cfg.Redis.Password, cfg.Redis.DB)
 
-	logger.Info(ctx, "All services initialized successfully")
+	// Initialize database
+	dbManager, err := database.NewDatabase(&cfg.Database)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize database: %w", err)
+	}
+
+	// Validate existing table structure
+	if err := dbManager.CheckAllTables(); err != nil {
+		fmt.Printf("Table validation completed with warnings: %v\n", err)
+	}
+	
+	// Auto-migrate all models
+	if err := dbManager.AutoMigrate(
+		&models.Country{},
+		&models.Region{},
+		&models.Language{},
+		&models.Timezone{},
+		&models.CountrySubdivision{},
+		&models.Locales{},
+	); err != nil {
+		return nil, fmt.Errorf("failed to auto-migrate models: %w", err)
+	}
+
+	// Initialize repositories
+	countryRepo := repositories.NewCountryRepositoryGORM(dbManager.DB, cacheClient, logger)
+	regionRepo := repositories.NewRegionRepository(dbManager.DB)
+	languageRepo := repositories.NewLanguageRepository(dbManager.DB)
+
+	// Initialize application services
+	countryAppService := applicationservices.NewCountryAppService(countryRepo, logger, tracer)
+	regionAppService := applicationservices.NewRegionAppService(regionRepo, logger.(*logging.StructuredLogger))
+	languageAppService := applicationservices.NewLanguageAppService(languageRepo, logger.(*logging.StructuredLogger))
 
 	return &Container{
-		Config:      cfg,
-		Logger:      logger,
-		Tracer:      tracer,
-		AuthService: authService,
+		Config:            cfg,
+		Logger:            logger,
+		Tracer:            tracer,
+		Cache:             cacheClient,
+		DB:                nil, // Will be set from GORM DB if needed
+		DBManager:         dbManager,
+		CountryRepository: countryRepo,
+		CountryAppService: countryAppService,
+		RegionRepository:  regionRepo,
+		RegionAppService:  regionAppService,
+		LanguageRepository: languageRepo,
+		LanguageAppService: languageAppService,
 	}, nil
 }
 
-func (c *Container) Shutdown(ctx context.Context) error {
-	c.Logger.Info(ctx, "Shutting down application")
+// Close closes all resources
+func (c *Container) Close() error {
+	if c.DBManager != nil {
+		return c.DBManager.Close()
+	}
 	return nil
 }

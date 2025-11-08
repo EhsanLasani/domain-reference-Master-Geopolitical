@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LASANI FLUID POWER LLP - Sales Orders</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8f9fa; overflow: hidden; }
+        
+        /* Top Header */
+        .top-header {
+            background: #0078d4;
+            color: white;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+        }
+        .company-name { font-size: 14px; font-weight: 600; }
+        .nav-tabs { display: flex; gap: 24px; font-size: 13px; }
+        .nav-tab { color: #ffffff; cursor: pointer; padding: 4px 8px; }
+        .nav-tab.active { background: rgba(255,255,255,0.2); border-radius: 2px; }
+        
+        /* Action Bar */
+        .action-bar {
+            background: white;
+            border-bottom: 1px solid #e1dfdd;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+        }
+        .page-title { font-weight: 600; margin-right: 16px; }
+        .action-btn {
+            background: white;
+            border: 1px solid #8a8886;
+            padding: 4px 12px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .action-btn:hover { background: #f3f2f1; }
+        .action-btn.primary { background: #0078d4; color: white; border-color: #0078d4; }
+        
+        /* Main Layout */
+        .main-layout { display: flex; height: calc(100vh - 96px); }
+        
+        /* Left Filter Panel */
+        .filter-panel {
+            width: 240px;
+            background: white;
+            border-right: 1px solid #e1dfdd;
+            overflow-y: auto;
+        }
+        .filter-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e1dfdd;
+            font-weight: 600;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .close-btn { cursor: pointer; color: #605e5c; }
+        .filter-section { padding: 12px 16px; border-bottom: 1px solid #f3f2f1; }
+        .filter-item {
+            display: flex;
+            align-items: center;
+            padding: 6px 0;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .filter-item:hover { background: #f3f2f1; margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+        .filter-item.active { color: #0078d4; font-weight: 600; }
+        .filter-count { margin-left: auto; color: #605e5c; font-size: 12px; }
+        .filter-input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #8a8886;
+            border-radius: 2px;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+        
+        /* Data Grid */
+        .data-grid { flex: 1; background: white; overflow: auto; }
+        .grid-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .grid-table th {
+            background: #f8f9fa;
+            border-bottom: 1px solid #e1dfdd;
+            padding: 8px 12px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .grid-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f3f2f1;
+            vertical-align: middle;
+        }
+        .grid-table tr:hover { background: #f8f9fa; }
+        .grid-table tr.selected { background: #deecf9; }
+        
+        /* Status Badges */
+        .status-open { color: #107c10; background: #dff6dd; padding: 2px 6px; border-radius: 2px; }
+        .status-released { color: #d83b01; background: #fed9cc; padding: 2px 6px; border-radius: 2px; }
+        
+        /* Right Details Panel */
+        .details-panel {
+            width: 320px;
+            background: white;
+            border-left: 1px solid #e1dfdd;
+            overflow-y: auto;
+        }
+        .details-header {
+            padding: 16px;
+            border-bottom: 1px solid #e1dfdd;
+            background: #f8f9fa;
+        }
+        .details-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+        .details-subtitle { color: #605e5c; font-size: 12px; }
+        .details-content { padding: 16px; }
+        .detail-section { margin-bottom: 24px; }
+        .detail-section-title {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 12px;
+            color: #323130;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        .detail-label { color: #605e5c; }
+        .detail-value { font-weight: 500; }
+    </style>
+</head>
+<body>
+    <!-- Top Header -->
+    <div class="top-header">
+        <div class="company-name">LASANI FLUID POWER LLP</div>
+        <div class="nav-tabs">
+            <div class="nav-tab">Finance</div>
+            <div class="nav-tab">Cash Management</div>
+            <div class="nav-tab active">Sales</div>
+            <div class="nav-tab">Purchasing</div>
+            <div class="nav-tab">India Taxation</div>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <span>🔔</span>
+            <span>👤</span>
+        </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+        <div class="page-title">Sales Orders:</div>
+        <button class="action-btn">All ▼</button>
+        <button class="action-btn primary" onclick="addNewOrder()">+ New</button>
+        <button class="action-btn" onclick="refreshData()">🔄 Refresh</button>
+        <button class="action-btn">Process ▼</button>
+        <button class="action-btn">Release ▼</button>
+        <button class="action-btn">Actions ▼</button>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <!-- Left Filter Panel -->
+        <div class="filter-panel">
+            <div class="filter-header">
+                Views
+                <span class="close-btn">×</span>
+            </div>
+            <div class="filter-section">
+                <div class="filter-item active" onclick="filterByView('all')">
+                    All
+                    <span class="filter-count" id="count-all">25</span>
+                </div>
+                <div class="filter-item" onclick="filterByView('shipped-not-invoiced')">
+                    Shipped Not Invoiced
+                    <span class="filter-count" id="count-shipped">8</span>
+                </div>
+                <div class="filter-item" onclick="filterByView('open')">
+                    Open Sales Orders
+                    <span class="filter-count" id="count-open">12</span>
+                </div>
+                <div class="filter-item" onclick="filterByView('ready-to-ship')">
+                    Ready to Ship
+                    <span class="filter-count" id="count-ready">3</span>
+                </div>
+                <div class="filter-item" onclick="filterByView('released')">
+                    Released
+                    <span class="filter-count" id="count-released">15</span>
+                </div>
+            </div>
+            <div class="filter-section">
+                <div style="font-weight: 600; margin-bottom: 8px;">Filter list by...</div>
+                <div style="color: #605e5c; font-size: 12px; margin-bottom: 4px;">Customer</div>
+                <input type="text" class="filter-input" id="customerFilter" placeholder="Filter by customer" onchange="applyFilters()">
+                <div style="color: #605e5c; font-size: 12px; margin: 12px 0 4px 0;">Status</div>
+                <select class="filter-input" id="statusFilter" onchange="applyFilters()">
+                    <option value="">All Status</option>
+                    <option value="Open">Open</option>
+                    <option value="Released">Released</option>
+                </select>
+                <div style="color: #605e5c; font-size: 12px; margin: 12px 0 4px 0;">Due Date</div>
+                <input type="date" class="filter-input" id="dueDateFilter" onchange="applyFilters()">
+            </div>
+        </div>
+
+        <!-- Data Grid -->
+        <div class="data-grid">
+            <table class="grid-table">
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>Sell-to Customer No.</th>
+                        <th>Sell-to Customer Name</th>
+                        <th>External Document No.</th>
+                        <th>Location Code</th>
+                        <th>Document Date</th>
+                        <th>Status</th>
+                        <th>Completely Shipped</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersTableBody">
+                    <tr class="selected" onclick="selectOrder('SO-0000251')">
+                        <td>SO-0000251</td>
+                        <td>200175</td>
+                        <td>INTEGRATED OIL AND GAS SERVICES PVT LTD</td>
+                        <td>LA/0268/24</td>
+                        <td>WH-100001</td>
+                        <td>27-06-2024</td>
+                        <td><span class="status-open">Open</span></td>
+                        <td>No</td>
+                        <td>0.00</td>
+                    </tr>
+                    <tr onclick="selectOrder('SO-0000254')">
+                        <td>SO-0000254</td>
+                        <td>200001</td>
+                        <td>AAKAR PIPE AND TUBES</td>
+                        <td></td>
+                        <td>WH-100001</td>
+                        <td>08-01-2025</td>
+                        <td><span class="status-open">Open</span></td>
+                        <td>No</td>
+                        <td>0.00</td>
+                    </tr>
+                    <tr onclick="selectOrder('SO-0000274')">
+                        <td>SO-0000274</td>
+                        <td>200097</td>
+                        <td>SPECIAL STEEL STORES</td>
+                        <td>LA/0287/24</td>
+                        <td>WH-100001</td>
+                        <td>04-07-2024</td>
+                        <td><span class="status-open">Open</span></td>
+                        <td>No</td>
+                        <td>0.00</td>
+                    </tr>
+                    <tr onclick="selectOrder('SO-0000345')">
+                        <td>SO-0000345</td>
+                        <td>200214</td>
+                        <td>Jektuna Tools and Gauges Private Limited</td>
+                        <td>LA/0354/24</td>
+                        <td>WH-100001</td>
+                        <td>25-07-2024</td>
+                        <td><span class="status-released">Released</span></td>
+                        <td>No</td>
+                        <td>6,230.00</td>
+                    </tr>
+                    <tr onclick="selectOrder('SO-0000378')">
+                        <td>SO-0000378</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>WH-100001</td>
+                        <td>17-01-2025</td>
+                        <td><span class="status-open">Open</span></td>
+                        <td>No</td>
+                        <td>0.00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Right Details Panel -->
+        <div class="details-panel">
+            <div class="details-header">
+                <div class="details-title" id="detailsTitle">Customer Statistics</div>
+                <div class="details-subtitle" id="detailsSubtitle">Customer No. 200175</div>
+            </div>
+            <div class="details-content" id="detailsContent">
+                <div class="detail-section">
+                    <div class="detail-section-title">Customer Statistics</div>
+                    <div class="detail-row">
+                        <span class="detail-label">Customer No.</span>
+                        <span class="detail-value">200175</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Balance (LCY)</span>
+                        <span class="detail-value">6,30,203.17</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Balance (LCY) As Vendor</span>
+                        <span class="detail-value">0.00</span>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-section-title">Sales</div>
+                    <div class="detail-row">
+                        <span class="detail-label">Outstanding Orders (LCY)</span>
+                        <span class="detail-value">0.00</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Shipped Not Invoiced (LCY)</span>
+                        <span class="detail-value">0.00</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Outstanding Invoices (LCY)</span>
+                        <span class="detail-value">0.00</span>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-section-title">Customer Details</div>
+                    <div class="detail-row">
+                        <span class="detail-label">Name</span>
+                        <span class="detail-value">INTEGRATED OIL AND GAS SERVICES PVT LTD</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Phone No.</span>
+                        <span class="detail-value">7767800942</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Email</span>
+                        <span class="detail-value" style="color: #0078d4;">purchase@iogs.net.in</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Credit Limit (LCY)</span>
+                        <span class="detail-value" style="color: #d83b01;">5,00,000.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function selectOrder(orderNo) {
+            // Remove previous selection
+            document.querySelectorAll('.grid-table tr').forEach(row => row.classList.remove('selected'));
+            
+            // Select current row
+            const row = event.target.closest('tr');
+            if (row) {
+                row.classList.add('selected');
+            }
+        }
+
+        function filterByView(view) {
+            // Update active filter item
+            document.querySelectorAll('.filter-item').forEach(item => item.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function applyFilters() {
+            // Filter implementation
+        }
+
+        function addNewOrder() {
+            alert('Add new order functionality');
+        }
+
+        function refreshData() {
+            alert('Refresh data functionality');
+        }
+    </script>
+</body>
+</html>

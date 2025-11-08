@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timezones CRUD</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: #2c3e50; color: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+        .btn { padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #2980b9; }
+        table { width: 100%; background: white; border-collapse: collapse; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #34495e; color: white; }
+        tr:hover { background: #f8f9fa; }
+        .loading { text-align: center; padding: 40px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Timezones Management</h1>
+            <p>Global timezone data and UTC offsets</p>
+        </div>
+        
+        <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+            <input type="text" id="searchInput" placeholder="Search timezones (code, name, offset)..." style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; width: 300px;">
+            <button class="btn" onclick="searchTimezones()">Search</button>
+            <button class="btn" onclick="clearSearch()" style="background: #95a5a6; color: white;">Clear</button>
+            <button class="btn" onclick="loadTimezones()">Refresh</button>
+            <button class="btn" onclick="addTimezone()">+ Add Timezone</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>UTC Offset</th>
+                    <th>DST Support</th>
+                    <th>DST Offset</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="timezonesTable">
+                <tr><td colspan="7" class="loading">Click "Load Timezones" to fetch data...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function loadTimezones() {
+            const tbody = document.getElementById('timezonesTable');
+            tbody.innerHTML = '<tr><td colspan="7" class="loading">Loading timezones...</td></tr>';
+            
+            try {
+                const response = await fetch('http://localhost:8081/api/v1/timezones', {
+                    headers: { 'X-Tenant-ID': 'default-tenant' }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const timezones = data.timezones || [];
+                    
+                    if (timezones.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No timezones found</td></tr>';
+                        return;
+                    }
+                    
+                    tbody.innerHTML = timezones.map(tz => `
+                        <tr>
+                            <td>${tz.timezone_code}</td>
+                            <td>${tz.timezone_name}</td>
+                            <td>UTC${tz.utc_offset_hours >= 0 ? '+' : ''}${tz.utc_offset_hours}:${String(tz.utc_offset_minutes || 0).padStart(2, '0')}</td>
+                            <td>${tz.supports_dst ? 'Yes' : 'No'}</td>
+                            <td>${tz.dst_offset_hours ? `+${tz.dst_offset_hours}h` : '-'}</td>
+                            <td><span style="color: ${tz.is_active ? '#27ae60' : '#e74c3c'}">${tz.is_active ? 'Active' : 'Inactive'}</span></td>
+                            <td>
+                                <button class="btn" style="padding: 5px 10px;">Edit</button>
+                                <button class="btn" style="padding: 5px 10px; background: #e74c3c;">Delete</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #e74c3c;">Failed to load timezones</td></tr>';
+                }
+            } catch (error) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #e74c3c;">Error loading timezones</td></tr>';
+            }
+        }
+
+        function addTimezone() {
+            alert('Add Timezone functionality - Coming soon!');
+        }
+
+        function searchTimezones() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            const tbody = document.getElementById('timezonesTable');
+            const rows = tbody.querySelectorAll('tr');
+            
+            if (searchTerm === '') {
+                rows.forEach(row => row.style.display = '');
+                return;
+            }
+            
+            let visibleCount = 0;
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                let found = false;
+                
+                // Search in all table cells (code, name, offset, dst, status)
+                cells.forEach(cell => {
+                    if (cell.textContent.toLowerCase().includes(searchTerm)) {
+                        found = true;
+                    }
+                });
+                
+                if (found) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            const tbody = document.getElementById('timezonesTable');
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach(row => row.style.display = '');
+        }
+
+        // Auto-load timezones when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTimezones();
+            
+            // Add search on Enter key
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') searchTimezones();
+            });
+        });
+    </script>
+</body>
+</html>

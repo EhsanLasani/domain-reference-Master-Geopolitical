@@ -19,7 +19,7 @@ type Config struct {
 type DatabaseConfig struct {
 	Host            string        `yaml:"host" env:"DB_HOST" default:"localhost"`
 	Port            int           `yaml:"port" env:"DB_PORT" default:"5432"`
-	Name            string        `yaml:"name" env:"DB_NAME" default:"geopolitical"`
+	Name            string        `yaml:"name" env:"DB_NAME" default:"referencemaster"`
 	User            string        `yaml:"user" env:"DB_USER" default:"postgres"`
 	Password        string        `yaml:"password" env:"DB_PASSWORD"`
 	SSLMode         string        `yaml:"ssl_mode" env:"DB_SSL_MODE" default:"disable"`
@@ -54,6 +54,12 @@ type ServerConfig struct {
 }
 
 func LoadConfig() (*Config, error) {
+	// Try to load from YAML file first
+	if cfg, err := loadFromYAML("config.yaml"); err == nil {
+		return cfg, nil
+	}
+	
+	// Fallback to environment variables
 	config := &Config{}
 	
 	// Load from environment variables
@@ -73,9 +79,9 @@ func loadFromEnv(config *Config) error {
 	// Database config
 	config.Database.Host = getEnvString("DB_HOST", "localhost")
 	config.Database.Port = getEnvInt("DB_PORT", 5432)
-	config.Database.Name = getEnvString("DB_NAME", "geopolitical")
+	config.Database.Name = getEnvString("DB_NAME", "referencemaster")
 	config.Database.User = getEnvString("DB_USER", "postgres")
-	config.Database.Password = getEnvString("DB_PASSWORD", "")
+	config.Database.Password = getEnvString("DB_PASSWORD", "@Salman2021")
 	config.Database.SSLMode = getEnvString("DB_SSL_MODE", "disable")
 	config.Database.MaxConnections = getEnvInt("DB_MAX_CONNECTIONS", 25)
 	config.Database.ConnMaxLifetime = getEnvDuration("DB_CONN_MAX_LIFETIME", 5*time.Minute)

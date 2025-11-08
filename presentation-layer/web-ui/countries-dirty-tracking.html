@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countries CRUD - Dirty Field Tracking</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { background: #2c3e50; color: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+        
+        /* Field States */
+        .field-clean { border: 1px solid #ddd; }
+        .field-dirty { border: 2px solid #f39c12; background: #fff3cd; }
+        .field-invalid { border: 2px solid #e74c3c; background: #f8d7da; }
+        .field-valid { border: 2px solid #27ae60; background: #d4edda; }
+        
+        /* Change Tracking */
+        .change-indicator { position: relative; }
+        .change-indicator::after { 
+            content: "●"; 
+            position: absolute; 
+            right: -15px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            color: #f39c12; 
+            font-size: 12px; 
+        }
+        
+        /* Validation Messages */
+        .validation-message { 
+            font-size: 11px; 
+            margin-top: 3px; 
+            padding: 3px 6px; 
+            border-radius: 3px; 
+        }
+        .validation-error { background: #f8d7da; color: #721c24; }
+        .validation-warning { background: #fff3cd; color: #856404; }
+        .validation-success { background: #d4edda; color: #155724; }
+        
+        /* Change Summary Panel */
+        .changes-panel { 
+            background: white; 
+            border-radius: 8px; 
+            padding: 15px; 
+            margin: 15px 0; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        .change-item { 
+            padding: 8px; 
+            margin: 5px 0; 
+            border-radius: 4px; 
+            background: #f8f9fa; 
+            border-left: 4px solid #f39c12; 
+        }
+        .change-field { font-weight: bold; color: #495057; }
+        .change-values { font-size: 12px; color: #6c757d; }
+        .old-value { text-decoration: line-through; color: #e74c3c; }
+        .new-value { color: #27ae60; font-weight: bold; }
+        
+        /* Standard Styles */
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        .btn-primary { background: #3498db; color: white; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-warning { background: #f39c12; color: white; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        input, select { padding: 10px; border-radius: 4px; }
+        .form-group { margin-bottom: 15px; position: relative; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select { width: 100%; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .modal-content { background: white; margin: 3% auto; padding: 30px; width: 90%; max-width: 800px; border-radius: 8px; max-height: 90vh; overflow-y: auto; }
+        
+        .countries-table { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #34495e; color: white; font-weight: bold; }
+        tr:hover { background: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Countries CRUD - Dirty Field Tracking System</h1>
+            <p>Real-time validation, change tracking, and field-level auditing</p>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button class="btn btn-success" onclick="openCreateModal()">+ Add Country</button>
+            <button class="btn btn-primary" onclick="loadCountries()">Refresh</button>
+        </div>
+
+        <div class="countries-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>ISO3</th>
+                        <th>Capital</th>
+                        <th>Continent</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="countriesTableBody">
+                    <tr><td colspan="7" style="text-align: center;">Loading countries...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Country Modal with Dirty Tracking -->
+    <div id="countryModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Add New Country</h2>
+            
+            <!-- Change Summary Panel -->
+            <div id="changesPanel" class="changes-panel" style="display: none;">
+                <h4>📝 Changes Summary</h4>
+                <div id="changesList"></div>
+                <div style="margin-top: 10px;">
+                    <strong>Total Changes: <span id="changeCount">0</span></strong>
+                </div>
+            </div>
+            
+            <form id="countryForm">
+                <div class="form-group">
+                    <label for="countryCode">Country Code (ISO 2) *</label>
+                    <input type="text" id="countryCode" maxlength="2" required data-field="country_code">
+                    <div class="validation-message" id="countryCode_validation"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="countryName">Country Name *</label>
+                    <input type="text" id="countryName" required data-field="country_name">
+                    <div class="validation-message" id="countryName_validation"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="iso3Code">ISO3 Code</label>
+                    <input type="text" id="iso3Code" maxlength="3" data-field="iso3_code">
+                    <div class="validation-message" id="iso3Code_validation"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="numericCode">Numeric Code</label>
+                    <input type="number" id="numericCode" min="1" max="999" data-field="numeric_code">
+                    <div class="validation-message" id="numericCode_validation"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="officialName">Official Name</label>
+                    <input type="text" id="officialName" data-field="official_name">
+                    <div class="validation-message" id="officialName_validation"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="capitalCity">Capital City</label>
+                    <input type="text" id="capitalCity" data-field="capital_city">
+                    <div class="validation-message" id="capitalCity_validation"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="continentCode">Continent</label>
+                    <select id="continentCode" data-field="continent_code">
+                        <option value="">Select Continent</option>
+                        <option value="AF">Africa</option>
+                        <option value="AS">Asia</option>
+                        <option value="EU">Europe</option>
+                        <option value="NA">North America</option>
+                        <option value="SA">South America</option>
+                        <option value="OC">Oceania</option>
+                        <option value="AN">Antarctica</option>
+                    </select>
+                    <div class="validation-message" id="continentCode_validation"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phonePrefix">Phone Prefix</label>
+                    <input type="text" id="phonePrefix" placeholder="+1" data-field="phone_prefix">
+                    <div class="validation-message" id="phonePrefix_validation"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="isActive">Status</label>
+                    <select id="isActive" data-field="is_active">
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
+                    <div class="validation-message" id="isActive_validation"></div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button type="button" class="btn" onclick="resetChanges()" style="background: #6c757d; color: white;">Reset</button>
+                    <button type="button" class="btn" onclick="closeModal()" style="background: #95a5a6; color: white;">Cancel</button>
+                    <button type="submit" class="btn btn-success" id="saveBtn" disabled>Save Country</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        class DirtyFieldTracker {
+            constructor() {
+                this.baseUrl = 'http://localhost:8081/api/v1';
+                this.tenantId = 'default-tenant';
+                this.countries = [];
+                this.editingCountry = null;
+                this.originalData = {};
+                this.dirtyFields = new Set();
+                this.fieldValidations = {};
+                this.validationRules = this.initValidationRules();
+                this.init();
+            }
+
+            init() {
+                this.loadCountries();
+                this.setupEventListeners();
+            }
+
+            initValidationRules() {
+                return {
+                    country_code: {
+                        required: true,
+                        dataType: 'VARCHAR(2)',
+                        pattern: /^[A-Z]{2}$/,
+                        maxLength: 2,
+                        message: 'Must be exactly 2 uppercase letters (VARCHAR(2))'
+                    },
+                    country_name: {
+                        required: true,
+                        dataType: 'VARCHAR(100)',
+                        minLength: 2,
+                        maxLength: 100,
+                        message: 'Must be 2-100 characters (VARCHAR(100))'
+                    },
+                    iso3_code: {
+                        dataType: 'VARCHAR(3)',
+                        pattern: /^[A-Z]{3}$/,
+                        maxLength: 3,
+                        message: 'Must be exactly 3 uppercase letters (VARCHAR(3))'
+                    },
+                    numeric_code: {
+                        dataType: 'INTEGER',
+                        type: 'integer',
+                        min: 1,
+                        max: 999,
+                        message: 'Must be integer between 1-999 (INTEGER)'
+                    },
+                    official_name: {
+                        dataType: 'VARCHAR(200)',
+                        maxLength: 200,
+                        message: 'Maximum 200 characters (VARCHAR(200))'
+                    },
+                    capital_city: {
+                        dataType: 'VARCHAR(100)',
+                        maxLength: 100,
+                        message: 'Maximum 100 characters (VARCHAR(100))'
+                    },
+                    continent_code: {
+                        dataType: 'continent_enum',
+                        enum: ['AF', 'AS', 'EU', 'NA', 'SA', 'OC', 'AN'],
+                        message: 'Must be valid continent enum: AF, AS, EU, NA, SA, OC, AN'
+                    },
+                    phone_prefix: {
+                        dataType: 'VARCHAR(10)',
+                        pattern: /^\+\d{1,4}$/,
+                        maxLength: 10,
+                        message: 'Must start with + followed by 1-4 digits (VARCHAR(10))'
+                    },
+                    is_active: {
+                        dataType: 'BOOLEAN',
+                        type: 'boolean',
+                        enum: ['true', 'false'],
+                        message: 'Must be true or false (BOOLEAN)'
+                    }
+                };
+            }
+
+            setupEventListeners() {
+                document.getElementById('countryForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveCountry();
+                });
+
+                // Add change listeners to all form fields
+                const formFields = document.querySelectorAll('[data-field]');
+                formFields.forEach(field => {
+                    field.addEventListener('input', (e) => this.handleFieldChange(e));
+                    field.addEventListener('blur', (e) => this.validateField(e.target));
+                });
+            }
+
+            handleFieldChange(event) {
+                const field = event.target;
+                const fieldName = field.dataset.field;
+                const currentValue = field.value;
+                const originalValue = this.originalData[fieldName] || '';
+
+                // Track dirty state
+                if (currentValue !== originalValue) {
+                    this.dirtyFields.add(fieldName);
+                    field.classList.add('change-indicator');
+                } else {
+                    this.dirtyFields.delete(fieldName);
+                    field.classList.remove('change-indicator');
+                }
+
+                // Real-time validation
+                this.validateField(field);
+                
+                // Update UI
+                this.updateFieldState(field);
+                this.updateChangesPanel();
+                this.updateSaveButton();
+            }
+
+            validateField(field) {
+                const fieldName = field.dataset.field;
+                const value = field.value;
+                const rules = this.validationRules[fieldName];
+                const validationDiv = document.getElementById(`${field.id}_validation`);
+
+                if (!rules) return true;
+
+                let isValid = true;
+                let message = '';
+                let dataTypeInfo = rules.dataType ? ` (${rules.dataType})` : '';
+
+                // Required validation
+                if (rules.required && (!value || value.trim() === '')) {
+                    isValid = false;
+                    message = `This field is required${dataTypeInfo}`;
+                }
+                // Data type validation - INTEGER
+                else if (value && rules.type === 'integer') {
+                    const numValue = parseInt(value);
+                    if (isNaN(numValue) || !Number.isInteger(parseFloat(value))) {
+                        isValid = false;
+                        message = `Must be a valid integer${dataTypeInfo}`;
+                    } else if (rules.min && numValue < rules.min) {
+                        isValid = false;
+                        message = `Minimum value is ${rules.min}${dataTypeInfo}`;
+                    } else if (rules.max && numValue > rules.max) {
+                        isValid = false;
+                        message = `Maximum value is ${rules.max}${dataTypeInfo}`;
+                    }
+                }
+                // Data type validation - BOOLEAN
+                else if (rules.type === 'boolean' && value && !['true', 'false'].includes(value)) {
+                    isValid = false;
+                    message = `Must be true or false${dataTypeInfo}`;
+                }
+                // VARCHAR length validation (database constraint)
+                else if (value && rules.maxLength && value.length > rules.maxLength) {
+                    isValid = false;
+                    message = `Maximum ${rules.maxLength} characters allowed${dataTypeInfo}`;
+                }
+                // Minimum length validation
+                else if (value && rules.minLength && value.length < rules.minLength) {
+                    isValid = false;
+                    message = `Minimum ${rules.minLength} characters required${dataTypeInfo}`;
+                }
+                // Pattern validation (format constraints)
+                else if (value && rules.pattern && !rules.pattern.test(value)) {
+                    isValid = false;
+                    message = rules.message;
+                }
+                // Enum validation (database enum constraint)
+                else if (value && rules.enum && !rules.enum.includes(value)) {
+                    isValid = false;
+                    message = `Must be one of: ${rules.enum.join(', ')}${dataTypeInfo}`;
+                }
+                // UTF-8 character validation for VARCHAR fields
+                else if (value && rules.dataType && rules.dataType.startsWith('VARCHAR')) {
+                    const byteLength = new TextEncoder().encode(value).length;
+                    const maxBytes = rules.maxLength * 4; // UTF-8 can use up to 4 bytes per character
+                    if (byteLength > maxBytes) {
+                        isValid = false;
+                        message = `Text too long for database field${dataTypeInfo}`;
+                    }
+                }
+
+                // Store validation result
+                this.fieldValidations[fieldName] = isValid;
+
+                // Update validation message
+                if (validationDiv) {
+                    if (!isValid) {
+                        validationDiv.textContent = message;
+                        validationDiv.className = 'validation-message validation-error';
+                    } else if (value && this.dirtyFields.has(fieldName)) {
+                        validationDiv.textContent = `✓ Valid ${dataTypeInfo}`;
+                        validationDiv.className = 'validation-message validation-success';
+                    } else {
+                        validationDiv.textContent = '';
+                        validationDiv.className = 'validation-message';
+                    }
+                }
+
+                return isValid;
+            }
+
+            updateFieldState(field) {
+                const fieldName = field.dataset.field;
+                const isValid = this.fieldValidations[fieldName] !== false;
+                const isDirty = this.dirtyFields.has(fieldName);
+
+                // Remove all state classes
+                field.classList.remove('field-clean', 'field-dirty', 'field-invalid', 'field-valid');
+
+                // Apply appropriate state class
+                if (!isValid) {
+                    field.classList.add('field-invalid');
+                } else if (isDirty) {
+                    field.classList.add('field-valid');
+                } else {
+                    field.classList.add('field-clean');
+                }
+            }
+
+            updateChangesPanel() {
+                const panel = document.getElementById('changesPanel');
+                const changesList = document.getElementById('changesList');
+                const changeCount = document.getElementById('changeCount');
+
+                if (this.dirtyFields.size === 0) {
+                    panel.style.display = 'none';
+                    return;
+                }
+
+                panel.style.display = 'block';
+                changeCount.textContent = this.dirtyFields.size;
+
+                const changes = Array.from(this.dirtyFields).map(fieldName => {
+                    const field = document.querySelector(`[data-field="${fieldName}"]`);
+                    const originalValue = this.originalData[fieldName] || '';
+                    const currentValue = field.value;
+                    const displayName = field.previousElementSibling.textContent.replace(' *', '');
+
+                    return `
+                        <div class="change-item">
+                            <div class="change-field">${displayName}</div>
+                            <div class="change-values">
+                                <span class="old-value">${originalValue || '(empty)'}</span> → 
+                                <span class="new-value">${currentValue || '(empty)'}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                changesList.innerHTML = changes;
+            }
+
+            updateSaveButton() {
+                const saveBtn = document.getElementById('saveBtn');
+                const hasChanges = this.dirtyFields.size > 0;
+                const allValid = Object.values(this.fieldValidations).every(valid => valid !== false);
+                
+                saveBtn.disabled = !hasChanges || !allValid;
+                
+                if (!hasChanges) {
+                    saveBtn.textContent = 'No Changes';
+                } else if (!allValid) {
+                    saveBtn.textContent = 'Fix Errors First';
+                } else {
+                    saveBtn.textContent = `Save ${this.dirtyFields.size} Change${this.dirtyFields.size > 1 ? 's' : ''}`;
+                }
+            }
+
+            resetChanges() {
+                // Reset all fields to original values
+                Object.keys(this.originalData).forEach(fieldName => {
+                    const field = document.querySelector(`[data-field="${fieldName}"]`);
+                    if (field) {
+                        field.value = this.originalData[fieldName] || '';
+                        field.classList.remove('change-indicator', 'field-dirty', 'field-invalid', 'field-valid');
+                        field.classList.add('field-clean');
+                    }
+                });
+
+                // Clear dirty tracking
+                this.dirtyFields.clear();
+                this.fieldValidations = {};
+                
+                // Clear validation messages
+                document.querySelectorAll('.validation-message').forEach(div => {
+                    div.textContent = '';
+                    div.className = 'validation-message';
+                });
+
+                this.updateChangesPanel();
+                this.updateSaveButton();
+            }
+
+            async loadCountries() {
+                try {
+                    const response = await fetch(`${this.baseUrl}/countries`, {
+                        headers: { 'X-Tenant-ID': this.tenantId }
+                    });
+                    const data = await response.json();
+                    this.countries = data.countries || [];
+                    this.renderCountries();
+                } catch (error) {
+                    console.error('Failed to load countries:', error);
+                }
+            }
+
+            renderCountries() {
+                const tbody = document.getElementById('countriesTableBody');
+                if (this.countries.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No countries found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = this.countries.map(country => `
+                    <tr>
+                        <td><strong>${country.country_code}</strong></td>
+                        <td>${country.country_name}</td>
+                        <td>${country.iso3_code || '-'}</td>
+                        <td>${country.capital_city || '-'}</td>
+                        <td>${country.continent_code || '-'}</td>
+                        <td>${country.is_active ? '✅ Active' : '❌ Inactive'}</td>
+                        <td>
+                            <button class="btn btn-warning" onclick="editCountry('${country.country_code}')" style="padding: 5px 10px;">Edit</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            openCreateModal() {
+                this.editingCountry = null;
+                this.originalData = {};
+                this.dirtyFields.clear();
+                this.fieldValidations = {};
+                
+                document.getElementById('modalTitle').textContent = 'Add New Country';
+                document.getElementById('countryForm').reset();
+                document.getElementById('isActive').value = 'true';
+                
+                // Clear all field states
+                document.querySelectorAll('[data-field]').forEach(field => {
+                    field.classList.remove('change-indicator', 'field-dirty', 'field-invalid', 'field-valid');
+                    field.classList.add('field-clean');
+                });
+                
+                document.querySelectorAll('.validation-message').forEach(div => {
+                    div.textContent = '';
+                    div.className = 'validation-message';
+                });
+                
+                this.updateChangesPanel();
+                this.updateSaveButton();
+                document.getElementById('countryModal').style.display = 'block';
+            }
+
+            editCountry(code) {
+                const country = this.countries.find(c => c.country_code === code);
+                if (!country) return;
+
+                this.editingCountry = country;
+                this.originalData = { ...country };
+                this.dirtyFields.clear();
+                this.fieldValidations = {};
+
+                document.getElementById('modalTitle').textContent = 'Edit Country';
+                
+                // Populate form with original data
+                document.getElementById('countryCode').value = country.country_code;
+                document.getElementById('countryName').value = country.country_name;
+                document.getElementById('iso3Code').value = country.iso3_code || '';
+                document.getElementById('numericCode').value = country.numeric_code || '';
+                document.getElementById('officialName').value = country.official_name || '';
+                document.getElementById('capitalCity').value = country.capital_city || '';
+                document.getElementById('continentCode').value = country.continent_code || '';
+                document.getElementById('phonePrefix').value = country.phone_prefix || '';
+                document.getElementById('isActive').value = country.is_active.toString();
+
+                // Set all fields to clean state
+                document.querySelectorAll('[data-field]').forEach(field => {
+                    field.classList.remove('change-indicator', 'field-dirty', 'field-invalid', 'field-valid');
+                    field.classList.add('field-clean');
+                });
+
+                document.querySelectorAll('.validation-message').forEach(div => {
+                    div.textContent = '';
+                    div.className = 'validation-message';
+                });
+
+                this.updateChangesPanel();
+                this.updateSaveButton();
+                document.getElementById('countryModal').style.display = 'block';
+            }
+
+            async saveCountry() {
+                // Final validation
+                const allValid = document.querySelectorAll('[data-field]');
+                let isFormValid = true;
+                
+                allValid.forEach(field => {
+                    if (!this.validateField(field)) {
+                        isFormValid = false;
+                    }
+                });
+
+                if (!isFormValid) {
+                    alert('Please fix all validation errors before saving.');
+                    return;
+                }
+
+                // Collect only dirty fields for update
+                const updateData = {};
+                this.dirtyFields.forEach(fieldName => {
+                    const field = document.querySelector(`[data-field="${fieldName}"]`);
+                    let value = field.value;
+                    
+                    // Type conversion
+                    if (fieldName === 'numeric_code' && value) {
+                        value = parseInt(value);
+                    } else if (fieldName === 'is_active') {
+                        value = value === 'true';
+                    } else if (value === '') {
+                        value = null;
+                    }
+                    
+                    updateData[fieldName] = value;
+                });
+
+                try {
+                    let response;
+                    if (this.editingCountry) {
+                        response = await fetch(`${this.baseUrl}/countries/${this.editingCountry.country_code}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Tenant-ID': this.tenantId
+                            },
+                            body: JSON.stringify(updateData)
+                        });
+                    } else {
+                        // For create, include all fields
+                        const allData = {};
+                        document.querySelectorAll('[data-field]').forEach(field => {
+                            const fieldName = field.dataset.field;
+                            let value = field.value;
+                            
+                            if (fieldName === 'numeric_code' && value) {
+                                value = parseInt(value);
+                            } else if (fieldName === 'is_active') {
+                                value = value === 'true';
+                            } else if (value === '') {
+                                value = null;
+                            }
+                            
+                            allData[fieldName] = value;
+                        });
+                        
+                        response = await fetch(`${this.baseUrl}/countries`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Tenant-ID': this.tenantId
+                            },
+                            body: JSON.stringify(allData)
+                        });
+                    }
+
+                    if (response.ok) {
+                        alert(`Country ${this.editingCountry ? 'updated' : 'created'} successfully!`);
+                        this.closeModal();
+                        this.loadCountries();
+                    } else {
+                        const errorData = await response.json();
+                        alert(`Error: ${errorData.error?.message || 'Unknown error'}`);
+                    }
+                } catch (error) {
+                    alert(`Error: ${error.message}`);
+                }
+            }
+
+            closeModal() {
+                document.getElementById('countryModal').style.display = 'none';
+                this.editingCountry = null;
+                this.originalData = {};
+                this.dirtyFields.clear();
+                this.fieldValidations = {};
+            }
+        }
+
+        // Initialize app
+        const app = new DirtyFieldTracker();
+
+        // Global functions
+        function openCreateModal() { app.openCreateModal(); }
+        function editCountry(code) { app.editCountry(code); }
+        function loadCountries() { app.loadCountries(); }
+        function closeModal() { app.closeModal(); }
+        function resetChanges() { app.resetChanges(); }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('countryModal');
+            if (event.target === modal) {
+                app.closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

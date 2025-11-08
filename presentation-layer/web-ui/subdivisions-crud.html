@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1.0">
+    <title>Subdivisions CRUD</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: #2c3e50; color: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+        .btn { padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #2980b9; }
+        table { width: 100%; background: white; border-collapse: collapse; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #34495e; color: white; }
+        tr:hover { background: #f8f9fa; }
+        .loading { text-align: center; padding: 40px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Subdivisions Management</h1>
+            <p>Country subdivisions, states, and provinces</p>
+        </div>
+        
+        <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+            <input type="text" id="searchInput" placeholder="Search subdivisions (code, name, country)..." style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; width: 300px;">
+            <button class="btn" onclick="searchSubdivisions()">Search</button>
+            <button class="btn" onclick="clearSearch()" style="background: #95a5a6; color: white;">Clear</button>
+            <button class="btn" onclick="loadSubdivisions()">Refresh</button>
+            <button class="btn" onclick="addSubdivision()">+ Add Subdivision</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Country</th>
+                    <th>Type</th>
+                    <th>Parent</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="subdivisionsTable">
+                <tr><td colspan="7" class="loading">Click "Load Subdivisions" to fetch data...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function loadSubdivisions() {
+            const tbody = document.getElementById('subdivisionsTable');
+            tbody.innerHTML = '<tr><td colspan="7" class="loading">Loading subdivisions...</td></tr>';
+            
+            try {
+                const response = await fetch('http://localhost:8081/api/v1/subdivisions', {
+                    headers: { 'X-Tenant-ID': 'default-tenant' }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const subdivisions = data.subdivisions || [];
+                    
+                    if (subdivisions.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No subdivisions found</td></tr>';
+                        return;
+                    }
+                    
+                    tbody.innerHTML = subdivisions.map(sub => `
+                        <tr>
+                            <td>${sub.subdivision_code}</td>
+                            <td>${sub.subdivision_name}</td>
+                            <td>${sub.country_code || '-'}</td>
+                            <td>${sub.subdivision_type || '-'}</td>
+                            <td>${sub.parent_subdivision_name || '-'}</td>
+                            <td><span style="color: ${sub.is_active ? '#27ae60' : '#e74c3c'}">${sub.is_active ? 'Active' : 'Inactive'}</span></td>
+                            <td>
+                                <button class="btn" style="padding: 5px 10px;">Edit</button>
+                                <button class="btn" style="padding: 5px 10px; background: #e74c3c;">Delete</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #e74c3c;">Failed to load subdivisions</td></tr>';
+                }
+            } catch (error) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #e74c3c;">Error loading subdivisions</td></tr>';
+            }
+        }
+
+        function addSubdivision() {
+            alert('Add Subdivision functionality - Coming soon!');
+        }
+
+        function searchSubdivisions() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            const tbody = document.getElementById('subdivisionsTable');
+            const rows = tbody.querySelectorAll('tr');
+            
+            if (searchTerm === '') {
+                rows.forEach(row => row.style.display = '');
+                return;
+            }
+            
+            let visibleCount = 0;
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                let found = false;
+                
+                // Search in all table cells
+                cells.forEach(cell => {
+                    if (cell.textContent.toLowerCase().includes(searchTerm)) {
+                        found = true;
+                    }
+                });
+                
+                if (found) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            const tbody = document.getElementById('subdivisionsTable');
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach(row => row.style.display = '');
+        }
+
+        // Auto-load subdivisions when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSubdivisions();
+            
+            // Add search on Enter key
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') searchSubdivisions();
+            });
+        });
+    </script>
+</body>
+</html>

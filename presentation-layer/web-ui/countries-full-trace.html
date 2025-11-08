@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countries - Reference Master Geopolitical</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { background: #2c3e50; color: white; padding: 20px; margin-bottom: 20px; }
+        .controls { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .countries-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .country-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .status-active { color: #27ae60; font-weight: bold; }
+        .status-inactive { color: #e74c3c; font-weight: bold; }
+        .trace-panel { background: #34495e; color: white; padding: 20px; margin-top: 20px; border-radius: 8px; font-family: monospace; font-size: 12px; max-height: 400px; overflow-y: auto; }
+        .error-panel { background: #e74c3c; color: white; padding: 15px; margin: 10px 0; border-radius: 4px; display: none; }
+        .performance-panel { background: #3498db; color: white; padding: 15px; margin: 10px 0; border-radius: 4px; }
+        .loading { text-align: center; padding: 40px; }
+        .btn { padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn:hover { background: #2980b9; }
+        input[type="text"] { padding: 10px; border: 1px solid #ddd; border-radius: 4px; width: 200px; margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Countries Management</h1>
+            <p>Reference Master Geopolitical Domain - Full Trace Mode</p>
+        </div>
+
+        <div class="controls">
+            <input type="text" id="searchInput" placeholder="Search countries..." />
+            <button class="btn" onclick="searchCountries()">Search</button>
+            <button class="btn" onclick="loadAllCountries()">Load All</button>
+            <button class="btn" onclick="clearTrace()">Clear Trace</button>
+        </div>
+
+        <div class="performance-panel" id="performancePanel">
+            <strong>Performance Metrics:</strong>
+            <div id="performanceMetrics">Ready to load...</div>
+        </div>
+
+        <div class="error-panel" id="errorPanel"></div>
+
+        <div id="countriesContainer">
+            <div class="loading">Click "Load All" to fetch countries...</div>
+        </div>
+
+        <div class="trace-panel" id="tracePanel">
+            <strong>Execution Trace:</strong><br>
+            <div id="traceLog">System initialized. Ready for operations...</div>
+        </div>
+    </div>
+
+    <script>
+        class CountriesApp {
+            constructor() {
+                this.baseUrl = 'http://localhost:8081/api/v1';
+                this.tenantId = 'default-tenant';
+                this.requestId = null;
+                this.startTime = null;
+                this.traceLog = [];
+                this.init();
+            }
+
+            init() {
+                this.log('INFO', 'CountriesApp initialized', { timestamp: new Date().toISOString() });
+            }
+
+            log(level, message, data = {}) {
+                const timestamp = new Date().toISOString();
+                const logEntry = {
+                    timestamp,
+                    level,
+                    message,
+                    requestId: this.requestId,
+                    ...data
+                };
+                
+                this.traceLog.push(logEntry);
+                this.updateTracePanel();
+                console.log(`[${level}] ${message}`, data);
+            }
+
+            updateTracePanel() {
+                const panel = document.getElementById('traceLog');
+                const logs = this.traceLog.slice(-20).map(log => 
+                    `[${log.timestamp}] [${log.level}] ${log.message} ${log.requestId ? `(${log.requestId})` : ''}`
+                ).join('<br>');
+                panel.innerHTML = logs;
+                panel.scrollTop = panel.scrollHeight;
+            }
+
+            generateRequestId() {
+                return 'req_' + Math.random().toString(36).substr(2, 9);
+            }
+
+            async makeRequest(endpoint, options = {}) {
+                this.requestId = this.generateRequestId();
+                this.startTime = performance.now();
+                
+                this.log('INFO', `Starting request to ${endpoint}`, { 
+                    method: options.method || 'GET',
+                    requestId: this.requestId 
+                });
+
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'X-Tenant-ID': this.tenantId,
+                    'X-Request-ID': this.requestId,
+                    ...options.headers
+                };
+
+                try {
+                    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+                        ...options,
+                        headers
+                    });
+
+                    const duration = performance.now() - this.startTime;
+                    
+                    this.log('INFO', `Request completed`, {
+                        status: response.status,
+                        duration: `${duration.toFixed(2)}ms`,
+                        responseHeaders: Object.fromEntries(response.headers.entries())
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        this.handleError(errorData, response.status, duration);
+                        throw new Error(`HTTP ${response.status}: ${errorData.error?.message || 'Unknown error'}`);
+                    }
+
+                    const data = await response.json();
+                    this.updatePerformanceMetrics(duration, data);
+                    
+                    return data;
+                } catch (error) {
+                    const duration = performance.now() - this.startTime;
+                    this.log('ERROR', `Request failed: ${error.message}`, { 
+                        duration: `${duration.toFixed(2)}ms`,
+                        error: error.message 
+                    });
+                    this.showError(`Request failed: ${error.message}`);
+                    throw error;
+                }
+            }
+
+            handleError(errorData, status, duration) {
+                this.log('ERROR', 'API Error Response', {
+                    errorCode: errorData.error?.code,
+                    errorMessage: errorData.error?.message,
+                    httpStatus: status,
+                    duration: `${duration.toFixed(2)}ms`,
+                    context: errorData.error?.context,
+                    requestId: errorData.error?.request_id
+                });
+
+                // Show user-friendly error message
+                let userMessage = 'An error occurred';
+                if (errorData.error?.code === 'ERR_RATE_LIMIT_001') {
+                    userMessage = 'Too many requests. Please wait and try again.';
+                } else if (errorData.error?.code === 'ERR_AUTH_001') {
+                    userMessage = 'Authentication required.';
+                } else if (errorData.error?.message) {
+                    userMessage = errorData.error.message;
+                }
+
+                this.showError(userMessage);
+            }
+
+            showError(message) {
+                const panel = document.getElementById('errorPanel');
+                panel.textContent = message;
+                panel.style.display = 'block';
+                setTimeout(() => panel.style.display = 'none', 5000);
+            }
+
+            updatePerformanceMetrics(duration, data) {
+                const metrics = {
+                    'Request Duration': `${duration.toFixed(2)}ms`,
+                    'Response Size': data ? `${JSON.stringify(data).length} bytes` : 'N/A',
+                    'Records Count': Array.isArray(data) ? data.length : (data.countries ? data.countries.length : 'N/A'),
+                    'Timestamp': new Date().toLocaleTimeString()
+                };
+
+                const metricsHtml = Object.entries(metrics)
+                    .map(([key, value]) => `${key}: ${value}`)
+                    .join(' | ');
+
+                document.getElementById('performanceMetrics').innerHTML = metricsHtml;
+
+                this.log('PERF', 'Performance metrics updated', metrics);
+            }
+
+            async loadCountries(search = '') {
+                this.log('INFO', 'Loading countries', { search });
+                
+                try {
+                    const endpoint = search ? `/countries?search=${encodeURIComponent(search)}` : '/countries';
+                    const data = await this.makeRequest(endpoint);
+                    
+                    this.log('INFO', 'Countries loaded successfully', { 
+                        count: data.countries ? data.countries.length : 0 
+                    });
+                    
+                    this.renderCountries(data.countries || []);
+                } catch (error) {
+                    this.log('ERROR', 'Failed to load countries', { error: error.message });
+                }
+            }
+
+            renderCountries(countries) {
+                this.log('INFO', 'Rendering countries', { count: countries.length });
+                
+                const container = document.getElementById('countriesContainer');
+                
+                if (countries.length === 0) {
+                    container.innerHTML = '<div class="loading">No countries found</div>';
+                    return;
+                }
+
+                const html = `
+                    <div class="countries-grid">
+                        ${countries.map(country => `
+                            <div class="country-card" data-testid="country-${country.country_code}">
+                                <h3 data-testid="country-name">${country.country_name}</h3>
+                                <p><strong>Code:</strong> ${country.country_code}</p>
+                                <p><strong>ISO3:</strong> ${country.iso3_code || 'N/A'}</p>
+                                <p><strong>Capital:</strong> ${country.capital_city || 'N/A'}</p>
+                                <p><strong>Status:</strong> 
+                                    <span class="${country.is_active ? 'status-active' : 'status-inactive'}" data-testid="country-status">
+                                        ${country.is_active ? 'Active' : 'Inactive'}
+                                    </span>
+                                </p>
+                                <p><strong>Region:</strong> ${country.region_name || 'N/A'}</p>
+                                <p><strong>Phone:</strong> ${country.phone_prefix || 'N/A'}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                container.innerHTML = html;
+                this.log('INFO', 'Countries rendered successfully');
+            }
+
+            clearTrace() {
+                this.traceLog = [];
+                document.getElementById('traceLog').innerHTML = 'Trace cleared. Ready for new operations...';
+                this.log('INFO', 'Trace log cleared');
+            }
+        }
+
+        // Initialize app
+        const app = new CountriesApp();
+
+        // Global functions for buttons
+        function loadAllCountries() {
+            app.loadCountries();
+        }
+
+        function searchCountries() {
+            const search = document.getElementById('searchInput').value;
+            app.loadCountries(search);
+        }
+
+        function clearTrace() {
+            app.clearTrace();
+        }
+
+        // Auto-load on page ready
+        document.addEventListener('DOMContentLoaded', () => {
+            app.log('INFO', 'DOM loaded, ready for user interaction');
+        });
+    </script>
+</body>
+</html>

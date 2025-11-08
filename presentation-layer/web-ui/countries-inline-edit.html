@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countries - Inline Editing</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { background: #2c3e50; color: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+        
+        /* Inline editing styles */
+        .editable-row { transition: all 0.3s ease; }
+        .editable-row.editing { background: #fff3cd; border: 2px solid #f39c12; }
+        .editable-row.adding { background: #d4edda; border: 2px solid #27ae60; }
+        
+        .editable-cell { position: relative; padding: 8px; }
+        .editable-cell input, .editable-cell select { 
+            width: 100%; 
+            border: 1px solid #ddd; 
+            padding: 6px; 
+            border-radius: 4px; 
+            background: white;
+        }
+        .editable-cell.invalid input { border-color: #e74c3c; background: #f8d7da; }
+        .editable-cell.valid input { border-color: #27ae60; background: #d4edda; }
+        
+        .validation-msg { 
+            position: absolute; 
+            top: 100%; 
+            left: 0; 
+            font-size: 11px; 
+            color: #e74c3c; 
+            background: white; 
+            padding: 2px 4px; 
+            border-radius: 3px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+            z-index: 10;
+            white-space: nowrap;
+        }
+        
+        /* Action buttons */
+        .row-actions { display: flex; gap: 5px; }
+        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .btn-edit { background: #f39c12; color: white; }
+        .btn-save { background: #27ae60; color: white; }
+        .btn-cancel { background: #6c757d; color: white; }
+        .btn-delete { background: #e74c3c; color: white; }
+        .btn-add { background: #17a2b8; color: white; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        /* Table styles */
+        .countries-table { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #34495e; color: white; font-weight: bold; font-size: 13px; }
+        tr:hover:not(.editing):not(.adding) { background: #f8f9fa; }
+        
+        /* Status indicators */
+        .status-active { color: #27ae60; font-weight: bold; }
+        .status-inactive { color: #e74c3c; font-weight: bold; }
+        
+        /* Draft indicator */
+        .draft-indicator { 
+            position: fixed; 
+            top: 20px; 
+            right: 20px; 
+            background: #17a2b8; 
+            color: white; 
+            padding: 10px 15px; 
+            border-radius: 5px; 
+            display: none; 
+        }
+        
+        /* Toolbar */
+        .toolbar { 
+            background: white; 
+            padding: 15px; 
+            margin-bottom: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+            display: flex; 
+            gap: 15px; 
+            align-items: center; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Countries Management - Inline Editing</h1>
+            <p>Click any cell to edit inline • Changes auto-save as drafts • No more modal dialogs</p>
+        </div>
+
+        <div class="toolbar">
+            <button class="btn btn-add" onclick="addNewRow()">+ Add New Country</button>
+            <input type="text" id="searchInput" placeholder="Search countries..." style="width: 250px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            <button class="btn btn-edit" onclick="loadCountries()">🔄 Refresh</button>
+            <span id="statusInfo" style="margin-left: auto; color: #6c757d;"></span>
+        </div>
+
+        <div class="countries-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Code</th>
+                        <th style="width: 200px;">Name</th>
+                        <th style="width: 80px;">ISO3</th>
+                        <th style="width: 150px;">Capital</th>
+                        <th style="width: 100px;">Continent</th>
+                        <th style="width: 100px;">Phone</th>
+                        <th style="width: 80px;">Status</th>
+                        <th style="width: 120px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="countriesTableBody">
+                    <tr><td colspan="8" style="text-align: center; padding: 40px;">Loading countries...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="draft-indicator" id="draftIndicator">
+        💾 Draft saved automatically
+    </div>
+
+    <script>
+        class InlineCountriesEditor {
+            constructor() {
+                this.baseUrl = 'http://localhost:8081/api/v1';
+                this.tenantId = 'default-tenant';
+                this.countries = [];
+                this.editingRow = null;
+                this.drafts = this.loadDrafts();
+                this.validationRules = this.initValidationRules();
+                this.init();
+            }
+
+            init() {
+                this.loadCountries();
+                this.setupEventListeners();
+                this.updateStatusInfo();
+            }
+
+            initValidationRules() {
+                return {
+                    country_code: { required: true, pattern: /^[A-Z]{2}$/, message: 'Must be 2 uppercase letters' },
+                    country_name: { required: true, minLength: 2, message: 'Must be at least 2 characters' },
+                    iso3_code: { pattern: /^[A-Z]{3}$/, message: 'Must be 3 uppercase letters' },
+                    continent_code: { enum: ['AF', 'AS', 'EU', 'NA', 'SA', 'OC', 'AN'], message: 'Invalid continent' }
+                };
+            }
+
+            setupEventListeners() {
+                document.getElementById('searchInput').addEventListener('input', (e) => this.filterCountries(e.target.value));
+                
+                // Auto-save drafts every 2 seconds
+                setInterval(() => this.saveDrafts(), 2000);
+            }
+
+            async loadCountries() {
+                try {
+                    const response = await fetch(`${this.baseUrl}/countries`, {
+                        headers: { 'X-Tenant-ID': this.tenantId }
+                    });
+                    const data = await response.json();
+                    this.countries = data.countries || [];
+                    this.renderCountries();
+                    this.updateStatusInfo();
+                } catch (error) {
+                    console.error('Failed to load countries:', error);
+                }
+            }
+
+            renderCountries() {
+                const tbody = document.getElementById('countriesTableBody');
+                if (this.countries.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No countries found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = this.countries.map(country => this.renderCountryRow(country)).join('');
+            }
+
+            renderCountryRow(country, isNew = false) {
+                const rowClass = isNew ? 'editable-row adding' : 'editable-row';
+                const deleteDisabled = country.is_active ? 'disabled title="Deactivate first"' : '';
+                
+                return `
+                    <tr class="${rowClass}" data-code="${country.country_code}">
+                        <td class="editable-cell" data-field="country_code">
+                            <span class="display-value">${country.country_code}</span>
+                            <input type="text" class="edit-input" value="${country.country_code}" style="display: none;" maxlength="2">
+                            <div class="validation-msg" style="display: none;"></div>
+                        </td>
+                        <td class="editable-cell" data-field="country_name">
+                            <span class="display-value">${country.country_name}</span>
+                            <input type="text" class="edit-input" value="${country.country_name}" style="display: none;">
+                            <div class="validation-msg" style="display: none;"></div>
+                        </td>
+                        <td class="editable-cell" data-field="iso3_code">
+                            <span class="display-value">${country.iso3_code || ''}</span>
+                            <input type="text" class="edit-input" value="${country.iso3_code || ''}" style="display: none;" maxlength="3">
+                            <div class="validation-msg" style="display: none;"></div>
+                        </td>
+                        <td class="editable-cell" data-field="capital_city">
+                            <span class="display-value">${country.capital_city || ''}</span>
+                            <input type="text" class="edit-input" value="${country.capital_city || ''}" style="display: none;">
+                            <div class="validation-msg" style="display: none;"></div>
+                        </td>
+                        <td class="editable-cell" data-field="continent_code">
+                            <span class="display-value">${country.continent_code || ''}</span>
+                            <select class="edit-input" style="display: none;">
+                                <option value="">Select</option>
+                                <option value="AF" ${country.continent_code === 'AF' ? 'selected' : ''}>Africa</option>
+                                <option value="AS" ${country.continent_code === 'AS' ? 'selected' : ''}>Asia</option>
+                                <option value="EU" ${country.continent_code === 'EU' ? 'selected' : ''}>Europe</option>
+                                <option value="NA" ${country.continent_code === 'NA' ? 'selected' : ''}>North America</option>
+                                <option value="SA" ${country.continent_code === 'SA' ? 'selected' : ''}>South America</option>
+                                <option value="OC" ${country.continent_code === 'OC' ? 'selected' : ''}>Oceania</option>
+                                <option value="AN" ${country.continent_code === 'AN' ? 'selected' : ''}>Antarctica</option>
+                            </select>
+                            <div class="validation-msg" style="display: none;"></div>
+                        </td>
+                        <td class="editable-cell" data-field="phone_prefix">
+                            <span class="display-value">${country.phone_prefix || ''}</span>
+                            <input type="text" class="edit-input" value="${country.phone_prefix || ''}" style="display: none;">
+                            <div class="validation-msg" style="display: none;"></div>
+                        </td>
+                        <td class="editable-cell" data-field="is_active">
+                            <span class="display-value ${country.is_active ? 'status-active' : 'status-inactive'}">
+                                ${country.is_active ? '✅ Active' : '❌ Inactive'}
+                            </span>
+                            <select class="edit-input" style="display: none;">
+                                <option value="true" ${country.is_active ? 'selected' : ''}>Active</option>
+                                <option value="false" ${!country.is_active ? 'selected' : ''}>Inactive</option>
+                            </select>
+                            <div class="validation-msg" style="display: none;"></div>
+                        </td>
+                        <td class="row-actions">
+                            <button class="btn btn-edit edit-btn" onclick="editRow('${country.country_code}')">Edit</button>
+                            <button class="btn btn-save save-btn" onclick="saveRow('${country.country_code}')" style="display: none;">Save</button>
+                            <button class="btn btn-cancel cancel-btn" onclick="cancelEdit('${country.country_code}')" style="display: none;">Cancel</button>
+                            <button class="btn btn-delete" onclick="deleteCountry('${country.country_code}')" ${deleteDisabled}>Delete</button>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            editRow(countryCode) {
+                // Cancel any existing edit
+                if (this.editingRow) {
+                    this.cancelEdit(this.editingRow);
+                }
+
+                this.editingRow = countryCode;
+                const row = document.querySelector(`tr[data-code="${countryCode}"]`);
+                
+                // Switch to edit mode
+                row.classList.add('editing');
+                row.querySelectorAll('.display-value').forEach(span => span.style.display = 'none');
+                row.querySelectorAll('.edit-input').forEach(input => {
+                    input.style.display = 'block';
+                    input.addEventListener('input', (e) => this.validateField(e.target));
+                });
+                
+                // Switch buttons
+                row.querySelector('.edit-btn').style.display = 'none';
+                row.querySelector('.save-btn').style.display = 'inline-block';
+                row.querySelector('.cancel-btn').style.display = 'inline-block';
+                
+                // Focus first input
+                row.querySelector('.edit-input').focus();
+                
+                // Save as draft
+                this.saveDraft(countryCode, this.getRowData(row));
+            }
+
+            cancelEdit(countryCode) {
+                const row = document.querySelector(`tr[data-code="${countryCode}"]`);
+                if (!row) return;
+
+                // If it's a new row being added, remove it completely
+                if (row.classList.contains('adding')) {
+                    row.remove();
+                    this.editingRow = null;
+                    this.clearDraft(countryCode);
+                    return;
+                }
+
+                // Restore original values for existing rows
+                const country = this.countries.find(c => c.country_code === countryCode);
+                if (country) {
+                    this.populateRowData(row, country);
+                }
+
+                // Switch back to display mode
+                this.exitEditMode(row);
+                this.editingRow = null;
+                
+                // Clear draft
+                this.clearDraft(countryCode);
+            }
+
+            exitEditMode(row) {
+                row.classList.remove('editing', 'adding');
+                row.querySelectorAll('.display-value').forEach(span => span.style.display = 'block');
+                row.querySelectorAll('.edit-input').forEach(input => input.style.display = 'none');
+                row.querySelectorAll('.validation-msg').forEach(msg => msg.style.display = 'none');
+                
+                // Switch buttons
+                row.querySelector('.edit-btn').style.display = 'inline-block';
+                row.querySelector('.save-btn').style.display = 'none';
+                row.querySelector('.cancel-btn').style.display = 'none';
+            }
+
+            validateField(input) {
+                const field = input.closest('.editable-cell').dataset.field;
+                const rules = this.validationRules[field];
+                const cell = input.closest('.editable-cell');
+                const msgDiv = cell.querySelector('.validation-msg');
+                
+                if (!rules) return true;
+
+                let isValid = true;
+                let message = '';
+
+                if (rules.required && !input.value.trim()) {
+                    isValid = false;
+                    message = 'Required field';
+                } else if (input.value && rules.pattern && !rules.pattern.test(input.value)) {
+                    isValid = false;
+                    message = rules.message;
+                } else if (input.value && rules.enum && !rules.enum.includes(input.value)) {
+                    isValid = false;
+                    message = rules.message;
+                } else if (input.value && rules.minLength && input.value.length < rules.minLength) {
+                    isValid = false;
+                    message = rules.message;
+                }
+
+                // Update UI
+                cell.classList.toggle('invalid', !isValid);
+                cell.classList.toggle('valid', isValid && input.value);
+                
+                if (!isValid) {
+                    msgDiv.textContent = message;
+                    msgDiv.style.display = 'block';
+                } else {
+                    msgDiv.style.display = 'none';
+                }
+
+                return isValid;
+            }
+
+            getRowData(row) {
+                const data = {};
+                row.querySelectorAll('.editable-cell').forEach(cell => {
+                    const field = cell.dataset.field;
+                    const input = cell.querySelector('.edit-input');
+                    let value = input.value;
+                    
+                    if (field === 'is_active') {
+                        value = value === 'true';
+                    } else if (field === 'numeric_code' && value) {
+                        value = parseInt(value);
+                    } else if (value === '') {
+                        value = null;
+                    }
+                    
+                    data[field] = value;
+                });
+                return data;
+            }
+
+            populateRowData(row, data) {
+                row.querySelectorAll('.editable-cell').forEach(cell => {
+                    const field = cell.dataset.field;
+                    const displaySpan = cell.querySelector('.display-value');
+                    const input = cell.querySelector('.edit-input');
+                    
+                    let value = data[field] || '';
+                    
+                    if (field === 'is_active') {
+                        displaySpan.textContent = data[field] ? '✅ Active' : '❌ Inactive';
+                        displaySpan.className = `display-value ${data[field] ? 'status-active' : 'status-inactive'}`;
+                        input.value = data[field] ? 'true' : 'false';
+                    } else {
+                        displaySpan.textContent = value;
+                        input.value = value;
+                    }
+                });
+            }
+
+            async saveRow(countryCode) {
+                const row = document.querySelector(`tr[data-code="${countryCode}"]`);
+                const data = this.getRowData(row);
+                
+                // Validate all fields
+                let isValid = true;
+                row.querySelectorAll('.edit-input').forEach(input => {
+                    if (!this.validateField(input)) {
+                        isValid = false;
+                    }
+                });
+
+                if (!isValid) {
+                    alert('Please fix validation errors before saving.');
+                    return;
+                }
+
+                try {
+                    const isNew = row.classList.contains('adding');
+                    const url = isNew ? `${this.baseUrl}/countries` : `${this.baseUrl}/countries/${countryCode}`;
+                    const method = isNew ? 'POST' : 'PUT';
+                    
+                    const response = await fetch(url, {
+                        method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Tenant-ID': this.tenantId
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (response.ok) {
+                        // Update local data
+                        if (isNew) {
+                            this.countries.push(data);
+                        } else {
+                            const index = this.countries.findIndex(c => c.country_code === countryCode);
+                            if (index !== -1) {
+                                this.countries[index] = { ...this.countries[index], ...data };
+                            }
+                        }
+                        
+                        // Update display
+                        this.populateRowData(row, data);
+                        this.exitEditMode(row);
+                        this.editingRow = null;
+                        this.clearDraft(countryCode);
+                        this.showDraftSaved();
+                        
+                        console.log(`Country ${isNew ? 'created' : 'updated'} successfully`);
+                    } else {
+                        const errorData = await response.json();
+                        alert(`Error: ${errorData.error?.message || 'Unknown error'}`);
+                    }
+                } catch (error) {
+                    alert(`Error: ${error.message}`);
+                }
+            }
+
+            addNewRow() {
+                // Check if there's already a new row being added
+                const existingNewRow = document.querySelector('.adding');
+                if (existingNewRow) {
+                    // Focus on the existing new row instead of creating another
+                    const firstInput = existingNewRow.querySelector('.edit-input');
+                    if (firstInput) {
+                        firstInput.focus();
+                    }
+                    return;
+                }
+
+                // Cancel existing edit of regular rows
+                if (this.editingRow) {
+                    this.cancelEdit(this.editingRow);
+                }
+
+                const newCountry = {
+                    country_code: '',
+                    country_name: '',
+                    iso3_code: '',
+                    capital_city: '',
+                    continent_code: '',
+                    phone_prefix: '',
+                    is_active: true
+                };
+
+                const tbody = document.getElementById('countriesTableBody');
+                const newRowHtml = this.renderCountryRow(newCountry, true);
+                tbody.insertAdjacentHTML('afterbegin', newRowHtml);
+                
+                // Start editing immediately
+                this.editRow('');
+            }
+
+            async deleteCountry(countryCode) {
+                if (!confirm(`Delete country "${countryCode}"?`)) return;
+
+                try {
+                    const response = await fetch(`${this.baseUrl}/countries/${countryCode}`, {
+                        method: 'DELETE',
+                        headers: { 'X-Tenant-ID': this.tenantId }
+                    });
+
+                    if (response.ok) {
+                        this.countries = this.countries.filter(c => c.country_code !== countryCode);
+                        document.querySelector(`tr[data-code="${countryCode}"]`).remove();
+                        this.updateStatusInfo();
+                        console.log('Country deleted successfully');
+                    } else {
+                        const errorData = await response.json();
+                        alert(`Error: ${errorData.error?.message || 'Unknown error'}`);
+                    }
+                } catch (error) {
+                    alert(`Error: ${error.message}`);
+                }
+            }
+
+            filterCountries(searchTerm) {
+                const rows = document.querySelectorAll('#countriesTableBody tr');
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(searchTerm.toLowerCase()) ? '' : 'none';
+                });
+            }
+
+            // Draft management
+            saveDraft(countryCode, data) {
+                this.drafts[countryCode] = { ...data, timestamp: Date.now() };
+                localStorage.setItem('countries_drafts', JSON.stringify(this.drafts));
+            }
+
+            clearDraft(countryCode) {
+                delete this.drafts[countryCode];
+                localStorage.setItem('countries_drafts', JSON.stringify(this.drafts));
+            }
+
+            loadDrafts() {
+                try {
+                    return JSON.parse(localStorage.getItem('countries_drafts') || '{}');
+                } catch {
+                    return {};
+                }
+            }
+
+            saveDrafts() {
+                if (this.editingRow) {
+                    const row = document.querySelector(`tr[data-code="${this.editingRow}"]`);
+                    if (row) {
+                        const data = this.getRowData(row);
+                        this.saveDraft(this.editingRow, data);
+                        this.showDraftSaved();
+                    }
+                }
+            }
+
+            showDraftSaved() {
+                const indicator = document.getElementById('draftIndicator');
+                indicator.style.display = 'block';
+                setTimeout(() => indicator.style.display = 'none', 2000);
+            }
+
+            updateStatusInfo() {
+                const total = this.countries.length;
+                const active = this.countries.filter(c => c.is_active).length;
+                document.getElementById('statusInfo').textContent = `${total} countries (${active} active, ${total - active} inactive)`;
+            }
+        }
+
+        // Initialize app
+        const app = new InlineCountriesEditor();
+
+        // Global functions
+        function editRow(code) { app.editRow(code); }
+        function saveRow(code) { app.saveRow(code); }
+        function cancelEdit(code) { app.cancelEdit(code); }
+        function deleteCountry(code) { app.deleteCountry(code); }
+        function addNewRow() { app.addNewRow(); }
+        function loadCountries() { app.loadCountries(); }
+    </script>
+</body>
+</html>

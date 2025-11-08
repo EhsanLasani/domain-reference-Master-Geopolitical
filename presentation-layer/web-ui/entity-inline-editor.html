@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entity Management - Inline Editing</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { background: #2c3e50; color: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+        
+        /* Inline editing styles */
+        .editable-row { transition: all 0.3s ease; }
+        .editable-row.editing { background: #fff3cd; border: 2px solid #f39c12; }
+        .editable-row.adding { background: #d4edda; border: 2px solid #27ae60; }
+        
+        .editable-cell { position: relative; padding: 8px; }
+        .editable-cell input, .editable-cell select { 
+            width: 100%; 
+            border: 1px solid #ddd; 
+            padding: 6px; 
+            border-radius: 4px; 
+            background: white;
+        }
+        .editable-cell.invalid input, .editable-cell.invalid select { border-color: #e74c3c; background: #f8d7da; }
+        .editable-cell.valid input, .editable-cell.valid select { border-color: #27ae60; background: #d4edda; }
+        
+        .validation-msg { 
+            position: absolute; 
+            top: 100%; 
+            left: 0; 
+            font-size: 11px; 
+            color: #e74c3c; 
+            background: white; 
+            padding: 2px 4px; 
+            border-radius: 3px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+            z-index: 10;
+            white-space: nowrap;
+        }
+        
+        /* Icon buttons */
+        .row-actions { display: flex; gap: 5px; }
+        .btn { 
+            padding: 8px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 14px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-edit { background: #f39c12; color: white; }
+        .btn-save { background: #27ae60; color: white; }
+        .btn-cancel { background: #6c757d; color: white; }
+        .btn-delete { background: #e74c3c; color: white; }
+        .btn-add { background: #17a2b8; color: white; padding: 8px 16px; width: auto; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn:hover:not(:disabled) { opacity: 0.8; }
+        
+        /* Table styles */
+        .entities-table { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #34495e; color: white; font-weight: bold; font-size: 13px; }
+        tr:hover:not(.editing):not(.adding) { background: #f8f9fa; }
+        
+        /* Status indicators */
+        .status-active { color: #27ae60; font-weight: bold; }
+        .status-inactive { color: #e74c3c; font-weight: bold; }
+        
+        /* Draft indicator */
+        .draft-indicator { 
+            position: fixed; 
+            top: 20px; 
+            right: 20px; 
+            background: #17a2b8; 
+            color: white; 
+            padding: 10px 15px; 
+            border-radius: 5px; 
+            display: none; 
+        }
+        
+        /* Toolbar */
+        .toolbar { 
+            background: white; 
+            padding: 15px; 
+            margin-bottom: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+            display: flex; 
+            gap: 15px; 
+            align-items: center; 
+        }
+        
+        .back-btn {
+            background: #6c757d;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .back-btn:hover { background: #5a6268; color: white; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 id="pageTitle">Entity Management - Inline Editing</h1>
+            <p>Click any cell to edit inline • Changes auto-save as drafts • Icon-based actions</p>
+        </div>
+
+        <div class="toolbar">
+            <a href="index.html" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <button class="btn btn-add" onclick="addNewRow()">
+                <i class="fas fa-plus"></i> Add New
+            </button>
+            <input type="text" id="searchInput" placeholder="Search..." style="width: 250px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            <button class="btn btn-edit" onclick="loadEntities()" title="Refresh">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+            <span id="statusInfo" style="margin-left: auto; color: #6c757d;"></span>
+        </div>
+
+        <div class="entities-table">
+            <table>
+                <thead id="tableHeader">
+                    <!-- Dynamic headers will be inserted here -->
+                </thead>
+                <tbody id="entitiesTableBody">
+                    <tr><td colspan="8" style="text-align: center; padding: 40px;">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="draft-indicator" id="draftIndicator">
+        <i class="fas fa-save"></i> Draft saved automatically
+    </div>
+
+    <script src="inline-editor.js"></script>
+    <script>
+        // Entity configurations
+        const entityConfigs = {
+            countries: {
+                name: 'countries',
+                displayName: 'Countries',
+                icon: '🌍',
+                endpoint: 'countries',
+                dataKey: 'countries',
+                primaryKey: 'country_code',
+                columns: [
+                    { field: 'country_code', label: 'Code', type: 'text', maxLength: 2 },
+                    { field: 'country_name', label: 'Name', type: 'text' },
+                    { field: 'iso3_code', label: 'ISO3', type: 'text', maxLength: 3 },
+                    { field: 'capital_city', label: 'Capital', type: 'text' },
+                    { field: 'continent_code', label: 'Continent', type: 'select', options: [
+                        { value: '', label: 'Select' },
+                        { value: 'AF', label: 'Africa' },
+                        { value: 'AS', label: 'Asia' },
+                        { value: 'EU', label: 'Europe' },
+                        { value: 'NA', label: 'North America' },
+                        { value: 'SA', label: 'South America' },
+                        { value: 'OC', label: 'Oceania' },
+                        { value: 'AN', label: 'Antarctica' }
+                    ]},
+                    { field: 'phone_prefix', label: 'Phone', type: 'text' },
+                    { field: 'is_active', label: 'Status', type: 'boolean' }
+                ]
+            },
+            regions: {
+                name: 'regions',
+                displayName: 'Regions',
+                icon: '🗺️',
+                endpoint: 'regions',
+                dataKey: 'regions',
+                primaryKey: 'region_code',
+                columns: [
+                    { field: 'region_code', label: 'Code', type: 'text', maxLength: 10 },
+                    { field: 'region_name', label: 'Name', type: 'text' },
+                    { field: 'region_type', label: 'Type', type: 'select', options: [
+                        { value: '', label: 'Select' },
+                        { value: 'CONTINENT', label: 'Continent' },
+                        { value: 'SUBCONTINENT', label: 'Subcontinent' },
+                        { value: 'REGION', label: 'Region' },
+                        { value: 'SUBREGION', label: 'Subregion' }
+                    ]},
+                    { field: 'is_active', label: 'Status', type: 'boolean' }
+                ]
+            },
+            languages: {
+                name: 'languages',
+                displayName: 'Languages',
+                icon: '🗣️',
+                endpoint: 'languages',
+                dataKey: 'languages',
+                primaryKey: 'language_code',
+                columns: [
+                    { field: 'language_code', label: 'Code', type: 'text', maxLength: 3 },
+                    { field: 'language_name', label: 'Name', type: 'text' },
+                    { field: 'iso3_code', label: 'ISO3', type: 'text', maxLength: 3 },
+                    { field: 'native_name', label: 'Native Name', type: 'text' },
+                    { field: 'direction', label: 'Direction', type: 'select', options: [
+                        { value: '', label: 'Select' },
+                        { value: 'LTR', label: 'Left to Right' },
+                        { value: 'RTL', label: 'Right to Left' }
+                    ]},
+                    { field: 'is_active', label: 'Status', type: 'boolean' }
+                ]
+            },
+            timezones: {
+                name: 'timezones',
+                displayName: 'Timezones',
+                icon: '🕐',
+                endpoint: 'timezones',
+                dataKey: 'timezones',
+                primaryKey: 'timezone_code',
+                columns: [
+                    { field: 'timezone_code', label: 'Code', type: 'text', maxLength: 10 },
+                    { field: 'timezone_name', label: 'Name', type: 'text' },
+                    { field: 'utc_offset_hours', label: 'UTC Offset', type: 'number' },
+                    { field: 'supports_dst', label: 'DST', type: 'boolean' },
+                    { field: 'is_active', label: 'Status', type: 'boolean' }
+                ]
+            },
+            subdivisions: {
+                name: 'subdivisions',
+                displayName: 'Subdivisions',
+                icon: '🏛️',
+                endpoint: 'subdivisions',
+                dataKey: 'subdivisions',
+                primaryKey: 'subdivision_code',
+                columns: [
+                    { field: 'subdivision_code', label: 'Code', type: 'text', maxLength: 10 },
+                    { field: 'subdivision_name', label: 'Name', type: 'text' },
+                    { field: 'country_code', label: 'Country', type: 'text', maxLength: 2 },
+                    { field: 'is_active', label: 'Status', type: 'boolean' }
+                ]
+            },
+            locales: {
+                name: 'locales',
+                displayName: 'Locales',
+                icon: '🌐',
+                endpoint: 'locales',
+                dataKey: 'locales',
+                primaryKey: 'locale_code',
+                columns: [
+                    { field: 'locale_code', label: 'Code', type: 'text', maxLength: 10 },
+                    { field: 'locale_name', label: 'Name', type: 'text' },
+                    { field: 'language_code', label: 'Language', type: 'text', maxLength: 3 },
+                    { field: 'country_code', label: 'Country', type: 'text', maxLength: 2 },
+                    { field: 'is_active', label: 'Status', type: 'boolean' }
+                ]
+            }
+        };
+
+        // Get entity from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const entityName = urlParams.get('entity') || 'countries';
+        const entityConfig = entityConfigs[entityName];
+
+        if (!entityConfig) {
+            document.body.innerHTML = '<div style="text-align: center; padding: 50px;">Invalid entity specified</div>';
+        } else {
+            // Create table headers
+            const headerRow = entityConfig.columns.map(col => `<th>${col.label}</th>`).join('') + '<th style="width: 140px;">Actions</th>';
+            document.getElementById('tableHeader').innerHTML = `<tr>${headerRow}</tr>`;
+
+            // Initialize the editor
+            const app = new InlineEntityEditor(entityConfig);
+
+            // Global functions for onclick handlers
+            window.editRow = (key) => app.editRow(key);
+            window.saveRow = (key) => app.saveRow(key);
+            window.cancelEdit = (key) => app.cancelEdit(key);
+            window.deleteEntity = (key) => app.deleteEntity(key);
+            window.addNewRow = () => app.addNewRow();
+            window.loadEntities = () => app.loadEntities();
+        }
+    </script>
+</body>
+</html>
