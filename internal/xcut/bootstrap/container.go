@@ -5,10 +5,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/domain-reference-Master-Geopolitical/internal/xcut/config"
-	"github.com/domain-reference-Master-Geopolitical/internal/xcut/logging"
-	"github.com/domain-reference-Master-Geopolitical/internal/xcut/security"
-	"github.com/domain-reference-Master-Geopolitical/internal/xcut/tracing"
+	"github.com/EhsanLasani/domain-reference-Master-Geopolitical/internal/xcut/config"
+	"github.com/EhsanLasani/domain-reference-Master-Geopolitical/internal/xcut/logging"
+	"github.com/EhsanLasani/domain-reference-Master-Geopolitical/internal/xcut/security"
+	"github.com/EhsanLasani/domain-reference-Master-Geopolitical/internal/xcut/tracing"
 )
 
 type Container struct {

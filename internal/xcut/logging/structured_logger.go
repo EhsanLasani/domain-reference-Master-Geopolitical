@@ -3,7 +3,6 @@ package logging
 
 import (
 	"context"
-	"encoding/json"
 	"log/slog"
 	"os"
 	"time"

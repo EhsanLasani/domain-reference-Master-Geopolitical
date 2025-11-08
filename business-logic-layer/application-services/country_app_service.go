@@ -5,9 +5,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/domain-reference-Master-Geopolitical/internal/xcut/errors"
-	"github.com/domain-reference-Master-Geopolitical/internal/xcut/logging"
-	"github.com/domain-reference-Master-Geopolitical/internal/xcut/tracing"
+	"github.com/EhsanLasani/domain-reference-Master-Geopolitical/internal/xcut/errors"
+	"github.com/EhsanLasani/domain-reference-Master-Geopolitical/internal/xcut/logging"
+	"github.com/EhsanLasani/domain-reference-Master-Geopolitical/internal/xcut/tracing"
 )
 
 type CountryApplicationService struct {

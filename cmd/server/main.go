@@ -11,8 +11,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/domain-reference-Master-Geopolitical/internal/xcut/bootstrap"
-	"github.com/domain-reference-Master-Geopolitical/internal/xcut/logging"
+	"github.com/EhsanLasani/domain-reference-Master-Geopolitical/internal/xcut/bootstrap"
+	"github.com/EhsanLasani/domain-reference-Master-Geopolitical/internal/xcut/logging"
 )
 
 func main() {
