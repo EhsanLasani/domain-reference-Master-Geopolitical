@@ -168,9 +168,10 @@ body {
 }
 
 .bc-submenu {
-    position: absolute;
-    top: 100%;
-    left: -16px;
+    position: fixed;
+    top: 88px;
+    left: 0;
+    right: 0;
     background: #ffffff;
     border: 1px solid #e0e0e0;
     border-radius: 0;
@@ -181,155 +182,53 @@ body {
 }
 
 .bc-nav-item:hover .bc-submenu,
+.bc-nav-item.open .bc-submenu,
 .bc-nav-item.pinned .bc-submenu {
     display: block;
 }
 
+/* When any submenu is pinned, adjust main content */
+body.submenu-pinned .bc-header-row3 {
+    margin-top: var(--submenu-height, 120px);
+}
+
+body.submenu-pinned .main-content {
+    height: calc(100vh - 158px - var(--submenu-height, 120px));
+}
+
 .bc-nav-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     padding: 16px;
     width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
+    max-height: 120px;
+    overflow-y: auto;
+    align-content: flex-start;
+    justify-content: flex-start;
 }
 
-/* Full-width rectangular navigation boxes - Carbon Design */
-.bc-nav-box-full {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    width: 100%;
-    padding: 16px;
+.bc-nav-link {
+    display: inline-block;
+    padding: 8px 16px;
     background: #ffffff;
     border: 1px solid #e0e0e0;
-    border-radius: 0;
+    color: #161616;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.15s ease;
-    position: relative;
-    min-height: 56px;
-    margin-bottom: 0;
+    white-space: nowrap;
 }
 
-.bc-nav-box-full:hover {
+.bc-nav-link:hover {
     background: #f4f4f4;
     border-color: #0f62fe;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(15,98,254,0.2);
-}
-
-.bc-nav-box-full i {
-    font-size: 20px;
     color: #0f62fe;
-    width: 24px;
-    text-align: center;
-    margin-right: 16px;
 }
 
-.bc-nav-box-full span {
-    font-size: 14px;
-    color: #161616;
-    font-weight: 400;
-    flex: 1;
-    line-height: 1.29;
-}
 
-.bc-nav-box-full .bc-nav-box-pin {
-    width: 24px;
-    height: 24px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 3px;
-    opacity: 0;
-    transition: all 0.2s ease;
-    margin-left: 8px;
-}
-
-.bc-nav-box-full:hover .bc-nav-box-pin {
-    opacity: 1;
-}
-
-.bc-nav-box-full .bc-nav-box-pin:hover {
-    background: #dee2e6;
-    opacity: 1;
-}
-
-.bc-nav-box-full .bc-nav-box-pin.pinned {
-    background: #0078d4;
-    color: white;
-    opacity: 1;
-}
-
-/* Legacy nav-box styles for backward compatibility */
-.bc-nav-box {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-    width: 100%;
-    position: relative;
-}
-
-.bc-nav-box-content {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex: 1;
-}
-
-.bc-nav-box-pin {
-    width: 20px;
-    height: 20px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 2px;
-    opacity: 0.6;
-}
-
-.bc-nav-box-pin:hover {
-    background: #e9ecef;
-    opacity: 1;
-}
-
-.bc-nav-box-pin.pinned {
-    background: #0078d4;
-    color: white;
-    opacity: 1;
-}
-
-.bc-nav-box:hover {
-    background: #e9ecef;
-    border-color: #0078d4;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0,120,212,0.2);
-}
-
-.bc-nav-box i {
-    font-size: 18px;
-    color: #0078d4;
-    margin-bottom: 6px;
-}
-
-.bc-nav-box span {
-    font-size: 11px;
-    color: #323130;
-    font-weight: 500;
-    line-height: 1.2;
-}
 
 /* Row 3: Entity Toolbar - Carbon Design */
 .bc-header-row3 {

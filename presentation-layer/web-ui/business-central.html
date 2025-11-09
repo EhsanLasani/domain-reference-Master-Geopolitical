@@ -60,41 +60,12 @@
                         <i class="fas fa-thumbtack"></i>
                     </button>
                     <div class="bc-nav-grid">
-                        <div class="bc-nav-box-full" onclick="switchEntity('countries'); event.stopPropagation();">
-                            <i class="fas fa-flag"></i>
-                            <span>Countries</span>
-                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'countries'); event.stopPropagation();" title="Pin/Unpin">
-                                <i class="fas fa-thumbtack"></i>
-                            </button>
-                        </div>
-                        <div class="bc-nav-box-full" onclick="switchEntity('languages'); event.stopPropagation();">
-                            <i class="fas fa-language"></i>
-                            <span>Languages</span>
-                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'languages'); event.stopPropagation();" title="Pin/Unpin">
-                                <i class="fas fa-thumbtack"></i>
-                            </button>
-                        </div>
-                        <div class="bc-nav-box-full" onclick="switchEntity('timezones'); event.stopPropagation();">
-                            <i class="fas fa-clock"></i>
-                            <span>Timezones</span>
-                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'timezones'); event.stopPropagation();" title="Pin/Unpin">
-                                <i class="fas fa-thumbtack"></i>
-                            </button>
-                        </div>
-                        <div class="bc-nav-box-full" onclick="switchEntity('subdivisions'); event.stopPropagation();">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span>Subdivisions</span>
-                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'subdivisions'); event.stopPropagation();" title="Pin/Unpin">
-                                <i class="fas fa-thumbtack"></i>
-                            </button>
-                        </div>
-                        <div class="bc-nav-box-full" onclick="switchEntity('locales'); event.stopPropagation();">
-                            <i class="fas fa-globe-americas"></i>
-                            <span>Locales</span>
-                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'locales'); event.stopPropagation();" title="Pin/Unpin">
-                                <i class="fas fa-thumbtack"></i>
-                            </button>
-                        </div>
+                        <a href="#" class="bc-nav-link" onclick="switchEntity('countries')">Countries</a>
+                        <a href="#" class="bc-nav-link" onclick="switchEntity('languages')">Languages</a>
+                        <a href="#" class="bc-nav-link" onclick="switchEntity('timezones')">Timezones</a>
+                        <a href="#" class="bc-nav-link" onclick="switchEntity('subdivisions')">Subdivisions</a>
+                        <a href="#" class="bc-nav-link" onclick="switchEntity('locales')">Locales</a>
+                        <a href="#" class="bc-nav-link" onclick="switchEntity('regions')">Regions</a>
                     </div>
                 </div>
             </div>
@@ -106,41 +77,11 @@
                         <i class="fas fa-thumbtack"></i>
                     </button>
                     <div class="bc-nav-grid">
-                        <div class="bc-nav-box-full" onclick="switchEntity('currencies'); event.stopPropagation();">
-                            <i class="fas fa-dollar-sign"></i>
-                            <span>Currencies</span>
-                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'currencies'); event.stopPropagation();" title="Pin/Unpin">
-                                <i class="fas fa-thumbtack"></i>
-                            </button>
-                        </div>
-                        <div class="bc-nav-box-full" onclick="switchEntity('fx_rates'); event.stopPropagation();">
-                            <i class="fas fa-exchange-alt"></i>
-                            <span>FX Rates</span>
-                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'fx_rates'); event.stopPropagation();" title="Pin/Unpin">
-                                <i class="fas fa-thumbtack"></i>
-                            </button>
-                        </div>
-                        <div class="bc-nav-box-full" onclick="switchEntity('uoms'); event.stopPropagation();">
-                            <i class="fas fa-ruler"></i>
-                            <span>Units of Measure</span>
-                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'uoms'); event.stopPropagation();" title="Pin/Unpin">
-                                <i class="fas fa-thumbtack"></i>
-                            </button>
-                        </div>
-                        <div class="bc-nav-box-full" onclick="switchEntity('incoterms'); event.stopPropagation();">
-                            <i class="fas fa-shipping-fast"></i>
-                            <span>INCOTERMS</span>
-                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'incoterms'); event.stopPropagation();" title="Pin/Unpin">
-                                <i class="fas fa-thumbtack"></i>
-                            </button>
-                        </div>
-                        <div class="bc-nav-box-full" onclick="switchEntity('payment_terms'); event.stopPropagation();">
-                            <i class="fas fa-credit-card"></i>
-                            <span>Payment Terms</span>
-                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'payment_terms'); event.stopPropagation();" title="Pin/Unpin">
-                                <i class="fas fa-thumbtack"></i>
-                            </button>
-                        </div>
+                        <a href="#" class="bc-nav-link" onclick="switchEntity('currencies')">Currencies</a>
+                        <a href="#" class="bc-nav-link" onclick="switchEntity('fx_rates')">FX Rates</a>
+                        <a href="#" class="bc-nav-link" onclick="switchEntity('uoms')">Units of Measure</a>
+                        <a href="#" class="bc-nav-link" onclick="switchEntity('incoterms')">INCOTERMS</a>
+                        <a href="#" class="bc-nav-link" onclick="switchEntity('payment_terms')">Payment Terms</a>
                     </div>
                 </div>
             </div>
@@ -151,11 +92,13 @@
                     <button class="bc-pin-btn" onclick="pinSubmenu(this, 'tenant')" title="Pin/Unpin Menu">
                         <i class="fas fa-thumbtack"></i>
                     </button>
-                    <a href="#" onclick="switchEntity('tenants')"><i class="fas fa-building"></i> Tenants</a>
-                    <a href="#" onclick="switchEntity('subscriptions')"><i class="fas fa-file-contract"></i> Subscriptions</a>
-                    <a href="#" onclick="switchEntity('billing_accounts')"><i class="fas fa-file-invoice"></i> Billing</a>
-                    <a href="#" onclick="switchEntity('invoices')"><i class="fas fa-receipt"></i> Invoices</a>
-                    <a href="#" onclick="switchEntity('payments')"><i class="fas fa-money-check"></i> Payments</a>
+                    <div class="bc-nav-grid">
+                        <a href="#" class="bc-nav-link" onclick="switchEntity('tenants')">Tenants</a>
+                        <a href="#" class="bc-nav-link" onclick="switchEntity('subscriptions')">Subscriptions</a>
+                        <a href="#" class="bc-nav-link" onclick="switchEntity('billing_accounts')">Billing</a>
+                        <a href="#" class="bc-nav-link" onclick="switchEntity('invoices')">Invoices</a>
+                        <a href="#" class="bc-nav-link" onclick="switchEntity('payments')">Payments</a>
+                    </div>
                 </div>
             </div>
             <div class="bc-nav-item" onclick="activateDomain(this, 'iam')">
@@ -165,10 +108,12 @@
                     <button class="bc-pin-btn" onclick="pinSubmenu(this, 'iam')" title="Pin/Unpin Menu">
                         <i class="fas fa-thumbtack"></i>
                     </button>
-                    <a href="#" onclick="switchEntity('users')"><i class="fas fa-user"></i> Users</a>
-                    <a href="#" onclick="switchEntity('roles')"><i class="fas fa-user-tag"></i> Roles</a>
-                    <a href="#" onclick="switchEntity('permissions')"><i class="fas fa-key"></i> Permissions</a>
-                    <a href="#" onclick="switchEntity('sessions')"><i class="fas fa-clock"></i> Sessions</a>
+                    <div class="bc-nav-grid">
+                        <a href="#" class="bc-nav-link" onclick="switchEntity('users')">Users</a>
+                        <a href="#" class="bc-nav-link" onclick="switchEntity('roles')">Roles</a>
+                        <a href="#" class="bc-nav-link" onclick="switchEntity('permissions')">Permissions</a>
+                        <a href="#" class="bc-nav-link" onclick="switchEntity('sessions')">Sessions</a>
+                    </div>
                 </div>
             </div>
             <div class="bc-nav-item" onclick="activateDomain(this, 'reports')">
@@ -178,9 +123,11 @@
                     <button class="bc-pin-btn" onclick="pinSubmenu(this, 'reports')" title="Pin/Unpin Menu">
                         <i class="fas fa-thumbtack"></i>
                     </button>
-                    <a href="#"><i class="fas fa-chart-bar"></i> Analytics</a>
-                    <a href="#"><i class="fas fa-file-alt"></i> Audit Trail</a>
-                    <a href="#"><i class="fas fa-download"></i> Export Reports</a>
+                    <div class="bc-nav-grid">
+                        <a href="#" class="bc-nav-link">Analytics</a>
+                        <a href="#" class="bc-nav-link">Audit Trail</a>
+                        <a href="#" class="bc-nav-link">Export Reports</a>
+                    </div>
                 </div>
             </div>
         </div>

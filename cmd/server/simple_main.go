@@ -30,7 +30,7 @@ func main() {
 		},
 		Server: config.ServerConfig{
 			Host: getEnv("SERVER_HOST", "0.0.0.0"),
-			Port: getEnvInt("SERVER_PORT", 8081),
+			Port: getEnvInt("SERVER_PORT", 8082),
 		},
 	}
 	

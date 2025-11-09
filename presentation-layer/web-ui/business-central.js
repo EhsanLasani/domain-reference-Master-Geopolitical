@@ -888,15 +888,22 @@ function bookmarkPage() {
 }
 
 function activateDomain(element, domainName) {
-    // Remove active class from all nav items
-    document.querySelectorAll('.bc-nav-item').forEach(item => {
-        item.classList.remove('active');
-        item.classList.remove('open');
-    });
+    // Toggle open state for clicked item
+    if (element.classList.contains('open')) {
+        element.classList.remove('open');
+    } else {
+        // Close other submenus
+        document.querySelectorAll('.bc-nav-item').forEach(item => {
+            if (item !== element && !item.classList.contains('pinned')) {
+                item.classList.remove('open');
+            }
+        });
+        element.classList.add('open');
+    }
     
-    // Add active class to clicked item
+    // Update active state
+    document.querySelectorAll('.bc-nav-item').forEach(item => item.classList.remove('active'));
     element.classList.add('active');
-    element.classList.add('open');
     
     // Switch domain
     app.switchDomain(domainName);
@@ -916,30 +923,41 @@ function switchEntity(entityName) {
     // Use the app's switchEntity method for consistency
     app.switchEntity(entityName);
     
-    // Close submenu after selection (unless pinned)
-    document.querySelectorAll('.bc-nav-item').forEach(item => {
-        if (!item.classList.contains('pinned')) {
-            item.classList.remove('open');
-        }
-    });
-    
     app.showNotification(`Switched to ${app.getEntityDisplayName(entityName)}`, 'success');
 }
 
 function pinSubmenu(element, domainName) {
     const navItem = element.closest('.bc-nav-item');
     const pinBtn = element;
+    const submenu = navItem.querySelector('.bc-submenu');
+    
+    // First unpin any other pinned submenus
+    document.querySelectorAll('.bc-nav-item.pinned').forEach(item => {
+        if (item !== navItem) {
+            item.classList.remove('pinned');
+            const otherPin = item.querySelector('.bc-pin-btn');
+            if (otherPin) otherPin.classList.remove('pinned');
+        }
+    });
     
     if (navItem.classList.contains('pinned')) {
+        // Unpin
         navItem.classList.remove('pinned');
         pinBtn.classList.remove('pinned');
-        pinBtn.innerHTML = '<i class="fas fa-thumbtack"></i>';
-        app.showNotification('Submenu unpinned', 'success');
+        document.body.classList.remove('submenu-pinned');
+        document.documentElement.style.removeProperty('--submenu-height');
+        app.showNotification('Submenu unpinned - toolbar restored', 'success');
     } else {
+        // Pin
         navItem.classList.add('pinned');
         pinBtn.classList.add('pinned');
-        pinBtn.innerHTML = '<i class="fas fa-thumbtack"></i>';
-        app.showNotification('Submenu pinned', 'success');
+        document.body.classList.add('submenu-pinned');
+        
+        // Calculate actual submenu height
+        const submenuHeight = submenu.offsetHeight;
+        document.documentElement.style.setProperty('--submenu-height', submenuHeight + 'px');
+        
+        app.showNotification('Submenu pinned - toolbar moved down', 'success');
     }
     
     event.stopPropagation();
@@ -965,6 +983,21 @@ document.addEventListener('click', function(event) {
                 item.classList.remove('open');
             }
         });
+    }
+});
+
+// Keep submenu open when clicking inside it
+document.addEventListener('click', function(event) {
+    if (event.target.closest('.bc-submenu')) {
+        event.stopPropagation();
+    }
+});
+
+// Initialize submenu state on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if any submenu is pinned and apply body class
+    if (document.querySelector('.bc-nav-item.pinned')) {
+        document.body.classList.add('submenu-pinned');
     }
 });
 
