@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schema-Driven Data Grid with Dirty Tracking</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8f9fa; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; margin-bottom: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        /* Field States - Only apply when dirty */
+        .field-pristine { border: 1px solid #ced4da; background: white; }
+        .field-dirty-valid { border: 2px solid #28a745; background: #f8fff9; }
+        .field-dirty-invalid { border: 2px solid #dc3545; background: #fff5f5; }
+        .field-dirty-pending { border: 2px solid #ffc107; background: #fffbf0; }
+        
+        /* Dirty indicator */
+        .dirty-indicator::after { 
+            content: "●"; position: absolute; right: -15px; top: 50%; 
+            transform: translateY(-50%); color: #ffc107; font-size: 14px; 
+        }
+        
+        /* Validation messages */
+        .validation-msg { font-size: 12px; margin-top: 4px; padding: 4px 8px; border-radius: 4px; }
+        .validation-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .validation-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        
+        /* Data Grid */
+        .data-grid { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        .grid-header { background: #495057; color: white; padding: 15px 20px; display: flex; justify-content: between; align-items: center; }
+        .grid-controls { display: flex; gap: 10px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        
+        /* Table */
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #dee2e6; }
+        th { background: #f8f9fa; font-weight: 600; color: #495057; }
+        tr:hover { background: #f8f9fa; }
+        .row-dirty { background: #fff3cd; }
+        .row-invalid { background: #f8d7da; }
+        
+        /* Inline editing */
+        .editable-cell { position: relative; cursor: pointer; }
+        .editable-cell:hover { background: #e9ecef; }
+        .cell-input { width: 100%; border: none; background: transparent; padding: 4px; }
+        .cell-select { width: 100%; border: none; background: white; padding: 4px; }
+        
+        /* Status indicators */
+        .status-indicator { display: inline-flex; align-items: center; gap: 5px; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .status-active { background: #28a745; }
+        .status-inactive { background: #6c757d; }
+        .status-dirty { background: #ffc107; }
+        .status-invalid { background: #dc3545; }
+        
+        /* Change summary */
+        .changes-summary { background: white; border-radius: 8px; padding: 15px; margin: 15px 0; border-left: 4px solid #ffc107; }
+        .change-item { padding: 8px; margin: 5px 0; background: #f8f9fa; border-radius: 4px; }
+        .field-name { font-weight: bold; color: #495057; }
+        .value-change { font-size: 12px; color: #6c757d; }
+        .old-value { text-decoration: line-through; color: #dc3545; }
+        .new-value { color: #28a745; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗃️ Schema-Driven Data Grid</h1>
+            <p>Enterprise-grade data management with schema validation, dirty tracking, and auto-sync</p>
+        </div>
+
+        <div class="data-grid">
+            <div class="grid-header">
+                <h3>Countries Management</h3>
+                <div class="grid-controls">
+                    <button class="btn btn-success" onclick="addNewRow()">+ Add Country</button>
+                    <button class="btn btn-primary" onclick="refreshData()">🔄 Refresh</button>
+                    <button class="btn btn-warning" id="saveAllBtn" onclick="saveAllChanges()" disabled>💾 Save All Changes</button>
+                    <span id="changeCounter" style="color: white; margin-left: 10px;">0 changes</span>
+                </div>
+            </div>
+
+            <div id="changesSummary" class="changes-summary" style="display: none;">
+                <h4>📝 Pending Changes</h4>
+                <div id="changesContent"></div>
+            </div>
+
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>ISO3</th>
+                        <th>Capital</th>
+                        <th>Continent</th>
+                        <th>Phone Prefix</th>
+                        <th>Active</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr><td colspan="9" style="text-align: center; padding: 40px;">Loading data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        class SchemaDataGrid {
+            constructor() {
+                this.baseUrl = 'http://localhost:8081/api/v1';
+                this.tenantId = 'default-tenant';
+                this.data = [];
+                this.dirtyRows = new Map(); // rowId -> {original, current, dirtyFields}
+                this.schema = this.initSchema();
+                this.validationResults = new Map(); // rowId -> {fieldName -> isValid}
+                this.init();
+            }
+
+            initSchema() {
+                return {
+                    country_code: {
+                        type: 'VARCHAR(2)',
+                        required: true,
+                        pattern: /^[A-Z]{2}$/,
+                        maxLength: 2,
+                        label: 'Code',
+                        editable: true,
+                        primaryKey: true
+                    },
+                    country_name: {
+                        type: 'VARCHAR(100)',
+                        required: true,
+                        minLength: 2,
+                        maxLength: 100,
+                        label: 'Name',
+                        editable: true
+                    },
+                    iso3_code: {
+                        type: 'VARCHAR(3)',
+                        pattern: /^[A-Z]{3}$/,
+                        maxLength: 3,
+                        label: 'ISO3',
+                        editable: true
+                    },
+                    capital_city: {
+                        type: 'VARCHAR(100)',
+                        maxLength: 100,
+                        label: 'Capital',
+                        editable: true
+                    },
+                    continent_code: {
+                        type: 'ENUM',
+                        enum: [
+                            { value: 'AF', label: 'Africa' },
+                            { value: 'AS', label: 'Asia' },
+                            { value: 'EU', label: 'Europe' },
+                            { value: 'NA', label: 'North America' },
+                            { value: 'SA', label: 'South America' },
+                            { value: 'OC', label: 'Oceania' },
+                            { value: 'AN', label: 'Antarctica' }
+                        ],
+                        label: 'Continent',
+                        editable: true
+                    },
+                    phone_prefix: {
+                        type: 'VARCHAR(10)',
+                        pattern: /^\\+\\d{1,4}$/,
+                        maxLength: 10,
+                        label: 'Phone Prefix',
+                        editable: true
+                    },
+                    is_active: {
+                        type: 'BOOLEAN',
+                        enum: [
+                            { value: true, label: 'Active' },
+                            { value: false, label: 'Inactive' }
+                        ],
+                        label: 'Active',
+                        editable: true,
+                        default: true
+                    }
+                };
+            }
+
+            async init() {
+                await this.loadData();
+                this.renderTable();
+                this.setupEventListeners();
+            }
+
+            async loadData() {
+                try {
+                    const response = await fetch(`${this.baseUrl}/countries`, {
+                        headers: { 'X-Tenant-ID': this.tenantId }
+                    });
+                    const result = await response.json();
+                    this.data = result.countries || [];
+                } catch (error) {
+                    console.error('Failed to load data:', error);
+                    this.data = [];
+                }
+            }
+
+            renderTable() {
+                const tbody = document.getElementById('tableBody');
+                
+                if (this.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px;">No data available</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = this.data.map(row => this.renderRow(row)).join('');
+                this.updateChangesSummary();
+            }
+
+            renderRow(row) {
+                const rowId = row.country_code;
+                const isDirty = this.dirtyRows.has(rowId);
+                const isValid = this.isRowValid(rowId);
+                const rowClass = isDirty ? (isValid ? 'row-dirty' : 'row-invalid') : '';
+
+                return `
+                    <tr class="${rowClass}" data-row-id="${rowId}">
+                        <td>${this.renderStatusIndicator(rowId)}</td>
+                        <td>${this.renderCell(row, 'country_code', rowId)}</td>
+                        <td>${this.renderCell(row, 'country_name', rowId)}</td>
+                        <td>${this.renderCell(row, 'iso3_code', rowId)}</td>
+                        <td>${this.renderCell(row, 'capital_city', rowId)}</td>
+                        <td>${this.renderCell(row, 'continent_code', rowId)}</td>
+                        <td>${this.renderCell(row, 'phone_prefix', rowId)}</td>
+                        <td>${this.renderCell(row, 'is_active', rowId)}</td>
+                        <td>
+                            ${isDirty ? `<button class="btn btn-success" onclick="saveRow('${rowId}')">Save</button>` : ''}
+                            ${isDirty ? `<button class="btn btn-warning" onclick="revertRow('${rowId}')">Revert</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            }
+
+            renderStatusIndicator(rowId) {
+                const isDirty = this.dirtyRows.has(rowId);
+                const isValid = this.isRowValid(rowId);
+                
+                if (!isDirty) {
+                    return '<span class="status-indicator"><span class="status-dot status-active"></span>Clean</span>';
+                } else if (isValid) {
+                    return '<span class="status-indicator"><span class="status-dot status-dirty"></span>Modified</span>';
+                } else {
+                    return '<span class="status-indicator"><span class="status-dot status-invalid"></span>Invalid</span>';
+                }
+            }
+
+            renderCell(row, fieldName, rowId) {
+                const schema = this.schema[fieldName];
+                if (!schema || !schema.editable) {
+                    return row[fieldName] || '';
+                }
+
+                const currentValue = this.getCurrentValue(rowId, fieldName) ?? row[fieldName] ?? '';
+                const isDirty = this.isFieldDirty(rowId, fieldName);
+                const isValid = this.isFieldValid(rowId, fieldName);
+                
+                let cellClass = 'editable-cell';
+                if (isDirty) {
+                    cellClass += isValid ? ' field-dirty-valid' : ' field-dirty-invalid';
+                    cellClass += ' dirty-indicator';
+                } else {
+                    cellClass += ' field-pristine';
+                }
+
+                if (schema.type === 'ENUM') {
+                    const options = schema.enum.map(opt => 
+                        `<option value="${opt.value}" ${currentValue == opt.value ? 'selected' : ''}>${opt.label}</option>`
+                    ).join('');
+                    
+                    return `
+                        <div class="${cellClass}" style="position: relative;">
+                            <select class="cell-select" 
+                                    onchange="handleCellChange('${rowId}', '${fieldName}', this.value)"
+                                    onblur="validateField('${rowId}', '${fieldName}')">
+                                <option value="">Select...</option>
+                                ${options}
+                            </select>
+                            <div class="validation-msg" id="validation_${rowId}_${fieldName}"></div>
+                        </div>
+                    `;
+                } else if (schema.type === 'BOOLEAN') {
+                    const options = schema.enum.map(opt => 
+                        `<option value="${opt.value}" ${currentValue == opt.value ? 'selected' : ''}>${opt.label}</option>`
+                    ).join('');
+                    
+                    return `
+                        <div class="${cellClass}" style="position: relative;">
+                            <select class="cell-select" 
+                                    onchange="handleCellChange('${rowId}', '${fieldName}', this.value === 'true')"
+                                    onblur="validateField('${rowId}', '${fieldName}')">
+                                ${options}
+                            </select>
+                            <div class="validation-msg" id="validation_${rowId}_${fieldName}"></div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="${cellClass}" style="position: relative;">
+                            <input type="text" class="cell-input" 
+                                   value="${currentValue}" 
+                                   onchange="handleCellChange('${rowId}', '${fieldName}', this.value)"
+                                   onblur="validateField('${rowId}', '${fieldName}')"
+                                   ${schema.maxLength ? `maxlength="${schema.maxLength}"` : ''}>
+                            <div class="validation-msg" id="validation_${rowId}_${fieldName}"></div>
+                        </div>
+                    `;
+                }
+            }
+
+            handleCellChange(rowId, fieldName, newValue) {
+                const originalRow = this.data.find(r => r.country_code === rowId);
+                if (!originalRow) return;
+
+                // Initialize dirty tracking for this row if needed
+                if (!this.dirtyRows.has(rowId)) {
+                    this.dirtyRows.set(rowId, {
+                        original: { ...originalRow },
+                        current: { ...originalRow },
+                        dirtyFields: new Set()
+                    });
+                }
+
+                const dirtyData = this.dirtyRows.get(rowId);
+                const originalValue = dirtyData.original[fieldName];
+                
+                // Update current value
+                dirtyData.current[fieldName] = newValue;
+                
+                // Track dirty state - only mark as dirty if value actually changed
+                if (newValue !== originalValue) {
+                    dirtyData.dirtyFields.add(fieldName);
+                } else {
+                    dirtyData.dirtyFields.delete(fieldName);
+                }
+
+                // Remove row from dirty tracking if no fields are dirty
+                if (dirtyData.dirtyFields.size === 0) {
+                    this.dirtyRows.delete(rowId);
+                }
+
+                // Only validate if field is dirty
+                if (dirtyData.dirtyFields.has(fieldName)) {
+                    this.validateField(rowId, fieldName);
+                } else {
+                    // Clear validation for clean fields
+                    this.clearFieldValidation(rowId, fieldName);
+                }
+
+                this.updateRowDisplay(rowId);
+                this.updateChangesSummary();
+            }
+
+            validateField(rowId, fieldName) {
+                const schema = this.schema[fieldName];
+                if (!schema) return true;
+
+                // Only validate dirty fields
+                const dirtyData = this.dirtyRows.get(rowId);
+                if (!dirtyData || !dirtyData.dirtyFields.has(fieldName)) {
+                    return true;
+                }
+
+                const value = dirtyData.current[fieldName];
+                let isValid = true;
+                let message = '';
+
+                // Required validation
+                if (schema.required && (!value || value.toString().trim() === '')) {
+                    isValid = false;
+                    message = `${schema.label} is required`;
+                }
+                // Type-specific validation
+                else if (value && value.toString().trim() !== '') {
+                    if (schema.type === 'VARCHAR(2)' || schema.type === 'VARCHAR(3)') {
+                        if (schema.pattern && !schema.pattern.test(value)) {
+                            isValid = false;
+                            message = `${schema.label} must be ${schema.maxLength} uppercase letters`;
+                        }
+                    } else if (schema.type.startsWith('VARCHAR')) {
+                        if (schema.maxLength && value.length > schema.maxLength) {
+                            isValid = false;
+                            message = `${schema.label} must be max ${schema.maxLength} characters`;
+                        }
+                        if (schema.minLength && value.length < schema.minLength) {
+                            isValid = false;
+                            message = `${schema.label} must be at least ${schema.minLength} characters`;
+                        }
+                    } else if (schema.type === 'ENUM') {
+                        const validValues = schema.enum.map(e => e.value);
+                        if (!validValues.includes(value)) {
+                            isValid = false;
+                            message = `${schema.label} must be one of: ${validValues.join(', ')}`;
+                        }
+                    }
+                }
+
+                // Store validation result
+                if (!this.validationResults.has(rowId)) {
+                    this.validationResults.set(rowId, {});
+                }
+                this.validationResults.get(rowId)[fieldName] = isValid;
+
+                // Update validation message
+                this.updateFieldValidation(rowId, fieldName, isValid, message);
+                
+                return isValid;
+            }
+
+            updateFieldValidation(rowId, fieldName, isValid, message) {
+                const validationDiv = document.getElementById(`validation_${rowId}_${fieldName}`);
+                if (!validationDiv) return;
+
+                if (!isValid && message) {
+                    validationDiv.textContent = message;
+                    validationDiv.className = 'validation-msg validation-error';
+                } else if (isValid && this.isFieldDirty(rowId, fieldName)) {
+                    validationDiv.textContent = '✓ Valid';
+                    validationDiv.className = 'validation-msg validation-success';
+                } else {
+                    validationDiv.textContent = '';
+                    validationDiv.className = 'validation-msg';
+                }
+            }
+
+            clearFieldValidation(rowId, fieldName) {
+                const validationDiv = document.getElementById(`validation_${rowId}_${fieldName}`);
+                if (validationDiv) {
+                    validationDiv.textContent = '';
+                    validationDiv.className = 'validation-msg';
+                }
+                
+                // Clear validation result
+                if (this.validationResults.has(rowId)) {
+                    delete this.validationResults.get(rowId)[fieldName];
+                }
+            }
+
+            getCurrentValue(rowId, fieldName) {
+                const dirtyData = this.dirtyRows.get(rowId);
+                return dirtyData ? dirtyData.current[fieldName] : null;
+            }
+
+            isFieldDirty(rowId, fieldName) {
+                const dirtyData = this.dirtyRows.get(rowId);
+                return dirtyData ? dirtyData.dirtyFields.has(fieldName) : false;
+            }
+
+            isFieldValid(rowId, fieldName) {
+                const validationResults = this.validationResults.get(rowId);
+                return validationResults ? validationResults[fieldName] !== false : true;
+            }
+
+            isRowValid(rowId) {
+                const validationResults = this.validationResults.get(rowId);
+                if (!validationResults) return true;
+                return Object.values(validationResults).every(result => result !== false);
+            }
+
+            updateRowDisplay(rowId) {
+                const row = document.querySelector(`tr[data-row-id="${rowId}"]`);
+                if (!row) return;
+
+                const isDirty = this.dirtyRows.has(rowId);
+                const isValid = this.isRowValid(rowId);
+                
+                row.className = isDirty ? (isValid ? 'row-dirty' : 'row-invalid') : '';
+                
+                // Update status indicator
+                const statusCell = row.cells[0];
+                statusCell.innerHTML = this.renderStatusIndicator(rowId);
+                
+                // Update actions cell
+                const actionsCell = row.cells[8];
+                if (isDirty) {
+                    actionsCell.innerHTML = `
+                        <button class="btn btn-success" onclick="saveRow('${rowId}')" ${!isValid ? 'disabled' : ''}>Save</button>
+                        <button class="btn btn-warning" onclick="revertRow('${rowId}')">Revert</button>
+                    `;
+                } else {
+                    actionsCell.innerHTML = '';
+                }
+            }
+
+            updateChangesSummary() {
+                const summaryDiv = document.getElementById('changesSummary');
+                const contentDiv = document.getElementById('changesContent');
+                const counterSpan = document.getElementById('changeCounter');
+                const saveAllBtn = document.getElementById('saveAllBtn');
+                
+                const totalChanges = Array.from(this.dirtyRows.values())
+                    .reduce((sum, data) => sum + data.dirtyFields.size, 0);
+                
+                counterSpan.textContent = `${totalChanges} change${totalChanges !== 1 ? 's' : ''}`;
+                
+                if (totalChanges === 0) {
+                    summaryDiv.style.display = 'none';
+                    saveAllBtn.disabled = true;
+                    return;
+                }
+                
+                summaryDiv.style.display = 'block';
+                saveAllBtn.disabled = !this.areAllChangesValid();
+                
+                const changesHtml = Array.from(this.dirtyRows.entries()).map(([rowId, data]) => {
+                    const fieldChanges = Array.from(data.dirtyFields).map(fieldName => {
+                        const schema = this.schema[fieldName];
+                        const oldValue = data.original[fieldName] || '';
+                        const newValue = data.current[fieldName] || '';
+                        
+                        return `
+                            <div class="change-item">
+                                <span class="field-name">${schema.label}:</span>
+                                <span class="value-change">
+                                    <span class="old-value">${oldValue || '(empty)'}</span> → 
+                                    <span class="new-value">${newValue || '(empty)'}</span>
+                                </span>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    return `<div><strong>Row ${rowId}:</strong>${fieldChanges}</div>`;
+                }).join('');
+                
+                contentDiv.innerHTML = changesHtml;
+            }
+
+            areAllChangesValid() {
+                return Array.from(this.dirtyRows.keys()).every(rowId => this.isRowValid(rowId));
+            }
+
+            async saveRow(rowId) {
+                if (!this.isRowValid(rowId)) {
+                    alert('Please fix validation errors before saving.');
+                    return;
+                }
+
+                const dirtyData = this.dirtyRows.get(rowId);
+                if (!dirtyData) return;
+
+                try {
+                    const updateData = {};
+                    dirtyData.dirtyFields.forEach(fieldName => {
+                        updateData[fieldName] = dirtyData.current[fieldName];
+                    });
+
+                    const response = await fetch(`${this.baseUrl}/countries/${rowId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Tenant-ID': this.tenantId
+                        },
+                        body: JSON.stringify(updateData)
+                    });
+
+                    if (response.ok) {
+                        // Update original data
+                        const originalRow = this.data.find(r => r.country_code === rowId);
+                        Object.assign(originalRow, dirtyData.current);
+                        
+                        // Clear dirty tracking
+                        this.dirtyRows.delete(rowId);
+                        this.validationResults.delete(rowId);
+                        
+                        this.updateRowDisplay(rowId);
+                        this.updateChangesSummary();
+                        
+                        alert('Row saved successfully!');
+                    } else {
+                        const errorData = await response.json();
+                        alert(`Error: ${errorData.error?.message || 'Unknown error'}`);
+                    }
+                } catch (error) {
+                    alert(`Error: ${error.message}`);
+                }
+            }
+
+            revertRow(rowId) {
+                this.dirtyRows.delete(rowId);
+                this.validationResults.delete(rowId);
+                this.renderTable();
+            }
+
+            async saveAllChanges() {
+                if (!this.areAllChangesValid()) {
+                    alert('Please fix all validation errors before saving.');
+                    return;
+                }
+
+                const savePromises = Array.from(this.dirtyRows.keys()).map(rowId => this.saveRow(rowId));
+                
+                try {
+                    await Promise.all(savePromises);
+                    alert('All changes saved successfully!');
+                } catch (error) {
+                    alert('Some changes failed to save. Please check individual rows.');
+                }
+            }
+
+            addNewRow() {
+                // Implementation for adding new rows
+                alert('Add new row functionality - to be implemented');
+            }
+
+            async refreshData() {
+                await this.loadData();
+                this.dirtyRows.clear();
+                this.validationResults.clear();
+                this.renderTable();
+            }
+
+            setupEventListeners() {
+                // Global event listeners can be added here
+            }
+        }
+
+        // Initialize the data grid
+        const dataGrid = new SchemaDataGrid();
+
+        // Global functions for inline event handlers
+        function handleCellChange(rowId, fieldName, value) {
+            dataGrid.handleCellChange(rowId, fieldName, value);
+        }
+
+        function validateField(rowId, fieldName) {
+            dataGrid.validateField(rowId, fieldName);
+        }
+
+        function saveRow(rowId) {
+            dataGrid.saveRow(rowId);
+        }
+
+        function revertRow(rowId) {
+            dataGrid.revertRow(rowId);
+        }
+
+        function saveAllChanges() {
+            dataGrid.saveAllChanges();
+        }
+
+        function addNewRow() {
+            dataGrid.addNewRow();
+        }
+
+        function refreshData() {
+            dataGrid.refreshData();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!-- Common Header for all LASANI Platform pages -->
+<div class="common-header">
+    <!-- Windows Toolbar -->
+    <div class="windows-toolbar">
+        <div class="windows-controls">
+            <button class="window-btn minimize"><i class="fas fa-minus"></i></button>
+            <button class="window-btn maximize"><i class="fas fa-square"></i></button>
+            <button class="window-btn close"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="window-title">LASANI Platform - Business Central</div>
+    </div>
+
+    <!-- Application Menu Bar -->
+    <div class="menu-bar">
+        <div class="menu-left">
+            <div class="logo">
+                <i class="fas fa-cube"></i>
+                <span>LASANI</span>
+            </div>
+            <nav class="main-menu">
+                <div class="menu-item dropdown">
+                    <span>Domains <i class="fas fa-chevron-down"></i></span>
+                    <div class="dropdown-content">
+                        <a href="geopolitical.html"><i class="fas fa-globe"></i> Geopolitical Reference</a>
+                        <a href="commerce.html"><i class="fas fa-coins"></i> Commerce Reference</a>
+                        <a href="tenant.html"><i class="fas fa-building"></i> Tenant Management</a>
+                        <a href="iam.html"><i class="fas fa-users"></i> Identity & Access</a>
+                    </div>
+                </div>
+                <div class="menu-item dropdown">
+                    <span>Tools <i class="fas fa-chevron-down"></i></span>
+                    <div class="dropdown-content">
+                        <a href="schema-alignment.html"><i class="fas fa-sync"></i> Schema Alignment</a>
+                        <a href="data-import.html"><i class="fas fa-upload"></i> Data Import</a>
+                        <a href="audit-trail.html"><i class="fas fa-history"></i> Audit Trail</a>
+                        <a href="system-health.html"><i class="fas fa-heartbeat"></i> System Health</a>
+                    </div>
+                </div>
+                <div class="menu-item dropdown">
+                    <span>Reports <i class="fas fa-chevron-down"></i></span>
+                    <div class="dropdown-content">
+                        <a href="compliance-report.html"><i class="fas fa-shield-alt"></i> LASANI Compliance</a>
+                        <a href="usage-analytics.html"><i class="fas fa-chart-bar"></i> Usage Analytics</a>
+                        <a href="performance-metrics.html"><i class="fas fa-tachometer-alt"></i> Performance</a>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <a href="help.html">Help</a>
+                </div>
+            </nav>
+        </div>
+        
+        <div class="menu-right">
+            <div class="tenant-selector">
+                <i class="fas fa-building"></i>
+                <select id="tenantSelect">
+                    <option value="default-tenant">Default Tenant</option>
+                    <option value="enterprise-corp">Enterprise Corp</option>
+                    <option value="startup-inc">Startup Inc</option>
+                </select>
+            </div>
+            <div class="user-menu dropdown">
+                <span><i class="fas fa-user-circle"></i> Admin <i class="fas fa-chevron-down"></i></span>
+                <div class="dropdown-content">
+                    <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
+                    <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+                    <a href="logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Navigation Links -->
+    <div class="quick-nav">
+        <a href="index.html" class="nav-link" data-page="home">
+            <i class="fas fa-home"></i> Home
+        </a>
+        <a href="geopolitical.html" class="nav-link" data-page="geopolitical">
+            <i class="fas fa-globe"></i> Geopolitical
+        </a>
+        <a href="commerce.html" class="nav-link" data-page="commerce">
+            <i class="fas fa-coins"></i> Commerce
+        </a>
+        <a href="tenant.html" class="nav-link" data-page="tenant">
+            <i class="fas fa-building"></i> Tenants
+        </a>
+        <a href="iam.html" class="nav-link" data-page="iam">
+            <i class="fas fa-users"></i> IAM
+        </a>
+        <div class="nav-separator"></div>
+        <a href="enterprise-demo.html" class="nav-link" data-page="demo">
+            <i class="fas fa-desktop"></i> Demo
+        </a>
+        <a href="api-docs.html" class="nav-link" data-page="api">
+            <i class="fas fa-code"></i> API
+        </a>
+    </div>
+</div>
+
+<script>
+// Common header functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Set active navigation link based on current page
+    const currentPage = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
+    const navLinks = document.querySelectorAll('.quick-nav .nav-link');
+    
+    navLinks.forEach(link => {
+        const page = link.getAttribute('data-page');
+        if (page === currentPage || (currentPage === 'index' && page === 'home')) {
+            link.classList.add('active');
+        }
+    });
+
+    // Dropdown functionality
+    const dropdowns = document.querySelectorAll('.dropdown');
+    dropdowns.forEach(dropdown => {
+        dropdown.addEventListener('click', function(e) {
+            e.stopPropagation();
+            this.classList.toggle('active');
+            
+            // Close other dropdowns
+            dropdowns.forEach(other => {
+                if (other !== this) {
+                    other.classList.remove('active');
+                }
+            });
+        });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function() {
+        dropdowns.forEach(dropdown => {
+            dropdown.classList.remove('active');
+        });
+    });
+
+    // Tenant selector change
+    const tenantSelect = document.getElementById('tenantSelect');
+    if (tenantSelect) {
+        tenantSelect.addEventListener('change', function() {
+            const selectedTenant = this.value;
+            // Store in localStorage for persistence
+            localStorage.setItem('selectedTenant', selectedTenant);
+            
+            // Emit custom event for other components to listen
+            window.dispatchEvent(new CustomEvent('tenantChanged', {
+                detail: { tenantId: selectedTenant }
+            }));
+        });
+
+        // Load saved tenant selection
+        const savedTenant = localStorage.getItem('selectedTenant');
+        if (savedTenant) {
+            tenantSelect.value = savedTenant;
+        }
+    }
+
+    // Window controls
+    document.querySelector('.minimize')?.addEventListener('click', () => {
+        console.log('Minimize window');
+    });
+
+    document.querySelector('.maximize')?.addEventListener('click', () => {
+        document.body.classList.toggle('maximized');
+    });
+
+    document.querySelector('.close')?.addEventListener('click', () => {
+        if (confirm('Are you sure you want to close the application?')) {
+            window.close();
+        }
+    });
+});
+</script>

@@ -16,3 +16,12 @@
 -- Index creation per entity
 \i indexes/regions-indexes.sql
 \i indexes/countries-indexes.sql
+
+-- Security policies
+\i security/rls-policies.sql
+
+-- Error codes
+\i errors/domain-error-codes.sql
+
+-- Migration system
+\i migrations/001_schema_migrations.sql

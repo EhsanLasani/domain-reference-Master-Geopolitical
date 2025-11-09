@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LASANI Platform - Business Central</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="business-central.css?v=2">
+</head>
+<body>
+    <!-- Row 1: Business Central Header -->
+    <div class="bc-header-row1">
+        <div class="bc-header-left">
+            <div class="bc-app-menu">
+                <i class="fas fa-th"></i>
+            </div>
+            <span class="bc-app-title">Business Central</span>
+            <span class="bc-separator">—</span>
+            <span class="bc-platform-title">LASANI Platform</span>
+        </div>
+        <div class="bc-header-right">
+            <div class="bc-icons">
+                <button class="bc-icon-btn" title="Environment Production">
+                    <i class="fas fa-exclamation-triangle" style="color: #ff6b35;"></i>
+                </button>
+                <button class="bc-icon-btn" title="Help">
+                    <i class="fas fa-question-circle"></i>
+                </button>
+                <button class="bc-icon-btn" title="Search">
+                    <i class="fas fa-search"></i>
+                </button>
+                <button class="bc-icon-btn" title="Notifications">
+                    <i class="fas fa-bell"></i>
+                </button>
+                <button class="bc-icon-btn" title="Settings">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button class="bc-icon-btn" title="User">
+                    <i class="fas fa-user-circle"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 2: Tenant & Domain Navigation -->
+    <div class="bc-header-row2">
+        <div class="bc-tenant-info">
+            <i class="fas fa-home"></i>
+            <span class="bc-tenant-name">Default Tenant</span>
+            <span class="bc-tenant-separator">|</span>
+            <span class="bc-dashboard-link">Dashboard</span>
+        </div>
+        <div class="bc-domain-nav">
+            <div class="bc-nav-item active" onclick="activateDomain(this, 'geopolitical')">
+                <span>Geopolitical</span>
+                <i class="fas fa-chevron-down"></i>
+                <div class="bc-submenu">
+                    <button class="bc-pin-btn" onclick="pinSubmenu(this, 'geopolitical')" title="Pin/Unpin Menu">
+                        <i class="fas fa-thumbtack"></i>
+                    </button>
+                    <div class="bc-nav-grid">
+                        <div class="bc-nav-box-full" onclick="switchEntity('countries'); event.stopPropagation();">
+                            <i class="fas fa-flag"></i>
+                            <span>Countries</span>
+                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'countries'); event.stopPropagation();" title="Pin/Unpin">
+                                <i class="fas fa-thumbtack"></i>
+                            </button>
+                        </div>
+                        <div class="bc-nav-box-full" onclick="switchEntity('languages'); event.stopPropagation();">
+                            <i class="fas fa-language"></i>
+                            <span>Languages</span>
+                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'languages'); event.stopPropagation();" title="Pin/Unpin">
+                                <i class="fas fa-thumbtack"></i>
+                            </button>
+                        </div>
+                        <div class="bc-nav-box-full" onclick="switchEntity('timezones'); event.stopPropagation();">
+                            <i class="fas fa-clock"></i>
+                            <span>Timezones</span>
+                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'timezones'); event.stopPropagation();" title="Pin/Unpin">
+                                <i class="fas fa-thumbtack"></i>
+                            </button>
+                        </div>
+                        <div class="bc-nav-box-full" onclick="switchEntity('subdivisions'); event.stopPropagation();">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Subdivisions</span>
+                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'subdivisions'); event.stopPropagation();" title="Pin/Unpin">
+                                <i class="fas fa-thumbtack"></i>
+                            </button>
+                        </div>
+                        <div class="bc-nav-box-full" onclick="switchEntity('locales'); event.stopPropagation();">
+                            <i class="fas fa-globe-americas"></i>
+                            <span>Locales</span>
+                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'locales'); event.stopPropagation();" title="Pin/Unpin">
+                                <i class="fas fa-thumbtack"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bc-nav-item" onclick="activateDomain(this, 'commerce')">
+                <span>Commerce</span>
+                <i class="fas fa-chevron-down"></i>
+                <div class="bc-submenu">
+                    <button class="bc-pin-btn" onclick="pinSubmenu(this, 'commerce')" title="Pin/Unpin Menu">
+                        <i class="fas fa-thumbtack"></i>
+                    </button>
+                    <div class="bc-nav-grid">
+                        <div class="bc-nav-box-full" onclick="switchEntity('currencies'); event.stopPropagation();">
+                            <i class="fas fa-dollar-sign"></i>
+                            <span>Currencies</span>
+                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'currencies'); event.stopPropagation();" title="Pin/Unpin">
+                                <i class="fas fa-thumbtack"></i>
+                            </button>
+                        </div>
+                        <div class="bc-nav-box-full" onclick="switchEntity('fx_rates'); event.stopPropagation();">
+                            <i class="fas fa-exchange-alt"></i>
+                            <span>FX Rates</span>
+                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'fx_rates'); event.stopPropagation();" title="Pin/Unpin">
+                                <i class="fas fa-thumbtack"></i>
+                            </button>
+                        </div>
+                        <div class="bc-nav-box-full" onclick="switchEntity('uoms'); event.stopPropagation();">
+                            <i class="fas fa-ruler"></i>
+                            <span>Units of Measure</span>
+                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'uoms'); event.stopPropagation();" title="Pin/Unpin">
+                                <i class="fas fa-thumbtack"></i>
+                            </button>
+                        </div>
+                        <div class="bc-nav-box-full" onclick="switchEntity('incoterms'); event.stopPropagation();">
+                            <i class="fas fa-shipping-fast"></i>
+                            <span>INCOTERMS</span>
+                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'incoterms'); event.stopPropagation();" title="Pin/Unpin">
+                                <i class="fas fa-thumbtack"></i>
+                            </button>
+                        </div>
+                        <div class="bc-nav-box-full" onclick="switchEntity('payment_terms'); event.stopPropagation();">
+                            <i class="fas fa-credit-card"></i>
+                            <span>Payment Terms</span>
+                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'payment_terms'); event.stopPropagation();" title="Pin/Unpin">
+                                <i class="fas fa-thumbtack"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bc-nav-item" onclick="activateDomain(this, 'tenant')">
+                <span>Tenant</span>
+                <i class="fas fa-chevron-down"></i>
+                <div class="bc-submenu">
+                    <button class="bc-pin-btn" onclick="pinSubmenu(this, 'tenant')" title="Pin/Unpin Menu">
+                        <i class="fas fa-thumbtack"></i>
+                    </button>
+                    <a href="#" onclick="switchEntity('tenants')"><i class="fas fa-building"></i> Tenants</a>
+                    <a href="#" onclick="switchEntity('subscriptions')"><i class="fas fa-file-contract"></i> Subscriptions</a>
+                    <a href="#" onclick="switchEntity('billing_accounts')"><i class="fas fa-file-invoice"></i> Billing</a>
+                    <a href="#" onclick="switchEntity('invoices')"><i class="fas fa-receipt"></i> Invoices</a>
+                    <a href="#" onclick="switchEntity('payments')"><i class="fas fa-money-check"></i> Payments</a>
+                </div>
+            </div>
+            <div class="bc-nav-item" onclick="activateDomain(this, 'iam')">
+                <span>Identity</span>
+                <i class="fas fa-chevron-down"></i>
+                <div class="bc-submenu">
+                    <button class="bc-pin-btn" onclick="pinSubmenu(this, 'iam')" title="Pin/Unpin Menu">
+                        <i class="fas fa-thumbtack"></i>
+                    </button>
+                    <a href="#" onclick="switchEntity('users')"><i class="fas fa-user"></i> Users</a>
+                    <a href="#" onclick="switchEntity('roles')"><i class="fas fa-user-tag"></i> Roles</a>
+                    <a href="#" onclick="switchEntity('permissions')"><i class="fas fa-key"></i> Permissions</a>
+                    <a href="#" onclick="switchEntity('sessions')"><i class="fas fa-clock"></i> Sessions</a>
+                </div>
+            </div>
+            <div class="bc-nav-item" onclick="activateDomain(this, 'reports')">
+                <span>Reports</span>
+                <i class="fas fa-chevron-down"></i>
+                <div class="bc-submenu">
+                    <button class="bc-pin-btn" onclick="pinSubmenu(this, 'reports')" title="Pin/Unpin Menu">
+                        <i class="fas fa-thumbtack"></i>
+                    </button>
+                    <a href="#"><i class="fas fa-chart-bar"></i> Analytics</a>
+                    <a href="#"><i class="fas fa-file-alt"></i> Audit Trail</a>
+                    <a href="#"><i class="fas fa-download"></i> Export Reports</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 3: Entity Toolbar -->
+    <div class="bc-header-row3">
+        <div class="bc-entity-info">
+            <span class="bc-entity-name" id="current-entity">Countries</span>
+            <div class="bc-entity-actions">
+                <button class="bc-action-btn" onclick="addRecord()" title="New">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <button class="bc-action-btn" onclick="editRecord()" title="Edit">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="bc-action-btn" onclick="deleteRecord()" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <button class="bc-action-btn" onclick="refreshData()" title="Refresh">
+                    <i class="fas fa-sync"></i>
+                </button>
+            </div>
+        </div>
+        <div class="bc-toolbar-right">
+            <button class="bc-panel-btn" onclick="toggleFilterPanel()" title="Filter Panel">
+                <i class="fas fa-filter"></i>
+            </button>
+            <button class="bc-panel-btn" onclick="toggleInfoPanel()" title="Information Panel">
+                <i class="fas fa-info-circle"></i>
+            </button>
+            <button class="bc-panel-btn" onclick="exportData()" title="Export">
+                <i class="fas fa-download"></i>
+            </button>
+            <button class="bc-panel-btn" onclick="bookmarkPage()" title="Bookmark">
+                <i class="fas fa-bookmark"></i>
+            </button>
+        </div>
+    </div>
+
+
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="status-left">
+            <span class="status-item">
+                <i class="fas fa-database"></i>
+                Connected: referencemaster
+            </span>
+            <span class="status-item">
+                <i class="fas fa-building"></i>
+                Tenant: Default Tenant
+            </span>
+        </div>
+        <div class="status-right">
+            <span class="status-item">Records: <span id="record-count">0</span></span>
+            <span class="status-item">Selected: <span id="selected-count">0</span></span>
+            <span class="status-item">
+                <i class="fas fa-user"></i>
+                Admin
+            </span>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Filter Pane -->
+        <div class="nav-pane">
+            <div class="nav-header">
+                <h3>Filter</h3>
+                <button class="nav-toggle"><i class="fas fa-chevron-left"></i></button>
+            </div>
+            <div class="filter-content">
+                <!-- Status Filter -->
+                <div class="filter-section">
+                    <div class="filter-title">
+                        <i class="fas fa-toggle-on"></i>
+                        <span>Status</span>
+                    </div>
+                    <div class="filter-options">
+                        <label class="filter-option">
+                            <input type="checkbox" checked> All
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox" checked> Active
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox"> Inactive
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Continent Filter -->
+                <div class="filter-section">
+                    <div class="filter-title">
+                        <i class="fas fa-globe"></i>
+                        <span>Continent</span>
+                    </div>
+                    <div class="filter-options">
+                        <label class="filter-option">
+                            <input type="checkbox" checked> All
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox"> Africa (AF)
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox"> Asia (AS)
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox"> Europe (EU)
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox"> North America (NA)
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox"> South America (SA)
+                        </label>
+                        <label class="filter-option">
+                            <input type="checkbox"> Oceania (OC)
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Date Range Filter -->
+                <div class="filter-section">
+                    <div class="filter-title">
+                        <i class="fas fa-calendar"></i>
+                        <span>Created Date</span>
+                    </div>
+                    <div class="filter-options">
+                        <div class="date-range">
+                            <label>From:</label>
+                            <input type="date" class="filter-date">
+                        </div>
+                        <div class="date-range">
+                            <label>To:</label>
+                            <input type="date" class="filter-date">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Filters -->
+                <div class="filter-section">
+                    <div class="filter-title">
+                        <i class="fas fa-filter"></i>
+                        <span>Quick Filters</span>
+                    </div>
+                    <div class="filter-options">
+                        <button class="quick-filter active" onclick="applyQuickFilter('all')">All Records</button>
+                        <button class="quick-filter" onclick="applyQuickFilter('recent')">Recent</button>
+                        <button class="quick-filter" onclick="applyQuickFilter('modified')">Modified Today</button>
+                        <button class="quick-filter" onclick="applyQuickFilter('inactive')">Inactive Only</button>
+                    </div>
+                </div>
+
+                <!-- Filter Actions -->
+                <div class="filter-actions">
+                    <button class="btn btn-primary btn-sm" onclick="applyFilters()">
+                        <i class="fas fa-check"></i> Apply Filters
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="clearFilters()">
+                        <i class="fas fa-times"></i> Clear All
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Grid Area -->
+        <div class="data-area">
+            <div class="data-header">
+                <div class="breadcrumb">
+                    <span>Geopolitical Reference</span>
+                    <i class="fas fa-chevron-right"></i>
+                    <span class="current">Countries</span>
+                </div>
+                <div class="view-controls">
+                    <button class="view-btn active" data-view="grid">
+                        <i class="fas fa-table"></i>
+                    </button>
+                    <button class="view-btn" data-view="form">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="view-btn" data-view="chart">
+                        <i class="fas fa-chart-bar"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Data Grid -->
+            <div class="data-grid" id="data-grid">
+                <table class="grid-table">
+                    <thead>
+                        <tr>
+                            <th class="select-col">
+                                <input type="checkbox" id="select-all">
+                            </th>
+                            <th class="sortable" data-field="country_code">
+                                Code
+                                <i class="fas fa-sort"></i>
+                            </th>
+                            <th class="sortable" data-field="country_name">
+                                Name
+                                <i class="fas fa-sort"></i>
+                            </th>
+                            <th class="sortable" data-field="iso3_code">
+                                ISO3
+                                <i class="fas fa-sort"></i>
+                            </th>
+                            <th class="sortable" data-field="continent_code">
+                                Continent
+                                <i class="fas fa-sort"></i>
+                            </th>
+                            <th class="sortable" data-field="capital_city">
+                                Capital
+                                <i class="fas fa-sort"></i>
+                            </th>
+                            <th class="sortable" data-field="is_active">
+                                Status
+                                <i class="fas fa-sort"></i>
+                            </th>
+                            <th class="actions-col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="grid-body">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Loading Overlay -->
+            <div class="loading-overlay" id="loading-overlay">
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>Loading data...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Dialog -->
+    <div class="dialog-overlay" id="form-dialog">
+        <div class="dialog">
+            <div class="dialog-header">
+                <h3 id="dialog-title">Country Details</h3>
+                <button class="dialog-close" onclick="closeDialog()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="dialog-content">
+                <form id="country-form" class="form-grid">
+                    <div class="form-group">
+                        <label>Country Code *</label>
+                        <input type="text" id="country_code" maxlength="2" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Country Name *</label>
+                        <input type="text" id="country_name" maxlength="100" required>
+                    </div>
+                    <div class="form-group">
+                        <label>ISO3 Code</label>
+                        <input type="text" id="iso3_code" maxlength="3">
+                    </div>
+                    <div class="form-group">
+                        <label>Numeric Code</label>
+                        <input type="number" id="numeric_code">
+                    </div>
+                    <div class="form-group">
+                        <label>Official Name</label>
+                        <input type="text" id="official_name" maxlength="200">
+                    </div>
+                    <div class="form-group">
+                        <label>Capital City</label>
+                        <input type="text" id="capital_city" maxlength="100">
+                    </div>
+                    <div class="form-group">
+                        <label>Continent</label>
+                        <select id="continent_code">
+                            <option value="">Select...</option>
+                            <option value="AF">Africa</option>
+                            <option value="AS">Asia</option>
+                            <option value="EU">Europe</option>
+                            <option value="NA">North America</option>
+                            <option value="SA">South America</option>
+                            <option value="OC">Oceania</option>
+                            <option value="AN">Antarctica</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Prefix</label>
+                        <input type="text" id="phone_prefix" maxlength="10">
+                    </div>
+                    <div class="form-group checkbox-group">
+                        <label>
+                            <input type="checkbox" id="is_active" checked>
+                            Active
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="dialog-footer">
+                <button class="btn btn-secondary" onclick="closeDialog()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveRecord()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="business-central.js?v=2"></script>
+</body>
+</html>

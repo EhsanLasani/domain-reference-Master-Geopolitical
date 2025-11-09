@@ -1,94 +1,59 @@
-// Package cache implements tenant-scoped caching framework
 package cache
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/redis/go-redis/v9"
 )
 
+// Cache interface defines caching operations
 type Cache interface {
-	Get(ctx context.Context, key string) ([]byte, error)
-	Set(ctx context.Context, key string, value []byte, ttl time.Duration) error
-	Delete(ctx context.Context, key string) error
-	Invalidate(ctx context.Context, pattern string) error
+	Set(ctx context.Context, tenantID, key string, value interface{}, ttl time.Duration) error
+	Get(ctx context.Context, tenantID, key string, dest interface{}) error
+	Delete(ctx context.Context, tenantID, key string) error
 }
 
-type TenantCache struct {
-	cache    Cache
-	tenantID string
-}
-
+// RedisCache implements Cache interface
 type RedisCache struct {
 	client *redis.Client
 }
 
-func NewRedisCache(addr, password string, db int) *RedisCache {
+func NewCache(addr, password string, db int) Cache {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: password,
 		DB:       db,
 	})
-	
+
 	return &RedisCache{client: rdb}
 }
 
-func (r *RedisCache) Get(ctx context.Context, key string) ([]byte, error) {
-	val, err := r.client.Get(ctx, key).Result()
-	if err == redis.Nil {
-		return nil, fmt.Errorf("key not found")
-	}
-	if err != nil {
-		return nil, fmt.Errorf("cache get error: %w", err)
-	}
-	return []byte(val), nil
-}
-
-func (r *RedisCache) Set(ctx context.Context, key string, value []byte, ttl time.Duration) error {
-	return r.client.Set(ctx, key, value, ttl).Err()
-}
-
-func (r *RedisCache) Delete(ctx context.Context, key string) error {
-	return r.client.Del(ctx, key).Err()
-}
-
-func (r *RedisCache) Invalidate(ctx context.Context, pattern string) error {
-	keys, err := r.client.Keys(ctx, pattern).Result()
+func (c *RedisCache) Set(ctx context.Context, tenantID, key string, value interface{}, ttl time.Duration) error {
+	scopedKey := c.scopeKey(tenantID, key)
+	data, err := json.Marshal(value)
 	if err != nil {
 		return err
 	}
-	if len(keys) > 0 {
-		return r.client.Del(ctx, keys...).Err()
+	return c.client.Set(ctx, scopedKey, data, ttl).Err()
+}
+
+func (c *RedisCache) Get(ctx context.Context, tenantID, key string, dest interface{}) error {
+	scopedKey := c.scopeKey(tenantID, key)
+	data, err := c.client.Get(ctx, scopedKey).Result()
+	if err != nil {
+		return err
 	}
-	return nil
+	return json.Unmarshal([]byte(data), dest)
 }
 
-func NewTenantCache(cache Cache, tenantID string) *TenantCache {
-	return &TenantCache{
-		cache:    cache,
-		tenantID: tenantID,
-	}
+func (c *RedisCache) Delete(ctx context.Context, tenantID, key string) error {
+	scopedKey := c.scopeKey(tenantID, key)
+	return c.client.Del(ctx, scopedKey).Err()
 }
 
-func (tc *TenantCache) scopedKey(key string) string {
-	return fmt.Sprintf("tenant:%s:%s", tc.tenantID, key)
-}
-
-func (tc *TenantCache) Get(ctx context.Context, key string) ([]byte, error) {
-	return tc.cache.Get(ctx, tc.scopedKey(key))
-}
-
-func (tc *TenantCache) Set(ctx context.Context, key string, value []byte, ttl time.Duration) error {
-	return tc.cache.Set(ctx, tc.scopedKey(key), value, ttl)
-}
-
-func (tc *TenantCache) Delete(ctx context.Context, key string) error {
-	return tc.cache.Delete(ctx, tc.scopedKey(key))
-}
-
-func (tc *TenantCache) InvalidateTenant(ctx context.Context) error {
-	pattern := fmt.Sprintf("tenant:%s:*", tc.tenantID)
-	return tc.cache.Invalidate(ctx, pattern)
+func (c *RedisCache) scopeKey(tenantID, key string) string {
+	return fmt.Sprintf("tenant:%s:geo:%s", tenantID, key)
 }

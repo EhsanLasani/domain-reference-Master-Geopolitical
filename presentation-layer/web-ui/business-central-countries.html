@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LASANI Platform - Countries Management</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8f9fa; overflow: hidden; }
+        
+        .top-header {
+            background: #0078d4; color: white; height: 48px;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 16px;
+            position: relative;
+        }
+        .company-name { font-size: 14px; font-weight: 600; }
+        .nav-tabs { display: flex; gap: 24px; font-size: 13px; }
+        .nav-tab { 
+            color: #ffffff; cursor: pointer; padding: 12px 16px; position: relative;
+            text-decoration: none; display: inline-block; transition: background-color 0.2s;
+        }
+        .nav-tab.active { 
+            background: rgba(255,255,255,0.2); border-radius: 2px;
+            border-bottom: 2px solid white;
+        }
+        .nav-tab:hover { 
+            background: rgba(255,255,255,0.1); border-radius: 2px;
+            text-decoration: none;
+        }
+        
+        .submenu {
+            position: absolute; top: 48px; left: 0; right: 0;
+            background: #0078d4; border-bottom: 1px solid #e1dfdd;
+            display: none; z-index: 1000; padding: 12px 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .submenu.pinned {
+            position: relative; display: block; top: 0;
+        }
+        .submenu-pin {
+            position: absolute; top: 12px; right: 20px;
+        }
+        .pin-btn {
+            background: transparent; border: 1px solid rgba(255,255,255,0.5);
+            color: white; padding: 2px 6px; border-radius: 1px; cursor: pointer;
+            font-size: 11px; font-family: 'Segoe UI', sans-serif;
+        }
+        .pin-btn:hover {
+            background: rgba(255,255,255,0.1); border-color: white;
+        }
+        .pin-btn.pinned {
+            background: white; color: #0078d4; border-color: white;
+        }
+        .submenu-section {
+            display: inline-block; margin-right: 40px; vertical-align: top;
+        }
+        .submenu-header {
+            display: block; color: rgba(255,255,255,0.8); font-size: 10px; font-weight: 600;
+            text-transform: uppercase; margin-bottom: 8px; padding: 0;
+            letter-spacing: 0.5px;
+        }
+        .submenu-item {
+            display: block; color: white; padding: 8px 12px;
+            cursor: pointer; font-size: 12px; margin-bottom: 1px;
+            border-radius: 1px; font-weight: 400;
+        }
+        .submenu-item:hover { background: rgba(255,255,255,0.1); }
+        .submenu-item.active { background: rgba(255,255,255,0.15); font-weight: 500; }
+        
+        .action-bar {
+            background: white; border-bottom: 1px solid #e1dfdd; padding: 8px 16px;
+            display: flex; align-items: center; gap: 12px; font-size: 13px;
+        }
+        .page-title { font-weight: 600; margin-right: 16px; }
+        .action-btn {
+            background: white; border: 1px solid #8a8886; padding: 4px 12px;
+            border-radius: 2px; cursor: pointer; font-size: 13px;
+        }
+        .action-btn:hover { background: #f3f2f1; }
+        .action-btn.primary { background: #0078d4; color: white; border-color: #0078d4; }
+        .action-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        .main-layout { display: flex; height: calc(100vh - 96px); }
+        
+        .filter-panel {
+            width: 240px; background: white; border-right: 1px solid #e1dfdd; overflow-y: auto;
+        }
+        .filter-header {
+            padding: 12px 16px; border-bottom: 1px solid #e1dfdd;
+            font-weight: 600; font-size: 13px;
+        }
+        .filter-section { padding: 12px 16px; border-bottom: 1px solid #f3f2f1; }
+        .filter-item {
+            display: flex; align-items: center; padding: 6px 0;
+            cursor: pointer; font-size: 13px;
+        }
+        .filter-item:hover { background: #f3f2f1; margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+        .filter-item.active { color: #0078d4; font-weight: 600; }
+        .filter-count { margin-left: auto; color: #605e5c; font-size: 12px; }
+        .filter-input {
+            width: 100%; padding: 6px 8px; border: 1px solid #8a8886;
+            border-radius: 2px; font-size: 13px; margin-top: 8px;
+        }
+        
+        .data-grid { flex: 1; background: white; overflow: auto; position: relative; }
+        .grid-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .grid-table th {
+            background: #f8f9fa; border-bottom: 1px solid #e1dfdd;
+            padding: 8px 12px; text-align: left; font-weight: 600;
+            position: sticky; top: 0; z-index: 10;
+        }
+        .grid-table td { padding: 8px 12px; border-bottom: 1px solid #f3f2f1; vertical-align: middle; }
+        .grid-table tr:hover { background: #f8f9fa; }
+        .grid-table tr.selected { background: #deecf9; }
+        .grid-table tr.row-dirty { background: #fff3cd; }
+        .grid-table tr.row-invalid { background: #f8d7da; }
+        
+        .editable-cell { position: relative; cursor: pointer; min-width: 100px; }
+        .editable-cell:hover { background: #e9ecef; }
+        .cell-input, .cell-select { 
+            width: 100%; border: 1px solid #8a8886; background: white; 
+            padding: 4px 6px; font-size: 12px;
+        }
+        .field-dirty-valid { border-color: #107c10; background: #f3f9f1; }
+        .field-dirty-invalid { border-color: #d83b01; background: #fef6f6; }
+        .dirty-indicator::after { 
+            content: "●"; position: absolute; right: 2px; top: 2px;
+            color: #d83b01; font-size: 10px; 
+        }
+        
+        .status-clean { color: #107c10; background: #dff6dd; padding: 2px 6px; border-radius: 2px; font-size: 11px; }
+        .status-dirty { color: #d83b01; background: #fed9cc; padding: 2px 6px; border-radius: 2px; font-size: 11px; }
+        .status-invalid { color: #ffffff; background: #d83b01; padding: 2px 6px; border-radius: 2px; font-size: 11px; }
+        
+        .details-panel {
+            width: 320px; background: white; border-left: 1px solid #e1dfdd; overflow-y: auto;
+        }
+        .details-header {
+            padding: 16px; border-bottom: 1px solid #e1dfdd; background: #f8f9fa;
+        }
+        .details-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+        .details-subtitle { color: #605e5c; font-size: 12px; }
+        .details-content { padding: 16px; }
+        .detail-section { margin-bottom: 24px; }
+        .detail-section-title {
+            font-weight: 600; font-size: 13px; margin-bottom: 12px; color: #323130;
+        }
+        .detail-row {
+            display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px;
+        }
+        .detail-label { color: #605e5c; }
+        .detail-value { font-weight: 500; }
+        
+        .validation-tooltip {
+            position: absolute; background: #323130; color: white;
+            padding: 4px 8px; border-radius: 4px; font-size: 11px;
+            z-index: 1000; max-width: 200px; display: none;
+        }
+        .validation-tooltip.error { background: #d83b01; }
+        .validation-tooltip.success { background: #107c10; }
+    </style>
+</head>
+<body>
+    <div class="top-header">
+        <div class="company-name" onclick="navigateToDashboard()" style="cursor: pointer;">LASANI PLATFORM</div>
+        <div class="nav-tabs">
+            <div class="nav-tab" onmouseenter="showSubmenu(event, 'finance')">Finance ▼</div>
+            <div class="nav-tab" onmouseenter="showSubmenu(event, 'reference')">Reference Data ▼</div>
+            <div class="nav-tab active" onmouseenter="showSubmenu(event, 'master')">Master Data ▼</div>
+            <div class="nav-tab" onmouseenter="showSubmenu(event, 'config')">Configuration ▼</div>
+        </div>
+        
+        <!-- Submenus -->
+        <div class="submenu" id="submenu-finance">
+            <div class="submenu-item" onclick="navigateTo('general-ledger')">General Ledger</div>
+            <div class="submenu-item" onclick="navigateTo('accounts-payable')">Accounts Payable</div>
+            <div class="submenu-item" onclick="navigateTo('accounts-receivable')">Accounts Receivable</div>
+            <div class="submenu-item" onclick="navigateTo('cash-management')">Cash Management</div>
+        </div>
+        
+        <div class="submenu" id="submenu-reference">
+            <div class="submenu-item" onclick="navigateTo('user-management')">User Management</div>
+            <div class="submenu-item" onclick="navigateTo('tenant-management')">Tenant Management</div>
+            <div class="submenu-item" onclick="navigateTo('iam-roles')">IAM Roles</div>
+            <div class="submenu-item" onclick="navigateTo('permissions')">Permissions</div>
+        </div>
+        
+        <div class="submenu" id="submenu-master">
+            <div class="submenu-section">
+                <span class="submenu-header">Geopolitical</span>
+                <div class="submenu-item active" onclick="navigateTo('countries')">Countries</div>
+                <div class="submenu-item" onclick="navigateTo('regions')">Regions</div>
+                <div class="submenu-item" onclick="navigateTo('languages')">Languages</div>
+                <div class="submenu-item" onclick="navigateTo('timezones')">Time Zones</div>
+                <div class="submenu-item" onclick="navigateTo('subdivisions')">Subdivisions</div>
+            </div>
+            <div class="submenu-section">
+                <span class="submenu-header">Commerce</span>
+                <div class="submenu-item" onclick="navigateTo('currencies')">Currencies</div>
+                <div class="submenu-item" onclick="navigateTo('fx-rates')">FX Rates</div>
+                <div class="submenu-item" onclick="navigateTo('uom')">Units of Measure</div>
+                <div class="submenu-item" onclick="navigateTo('trade-terms')">Trade Terms</div>
+                <div class="submenu-item" onclick="navigateTo('tax-regimes')">Tax Regimes</div>
+                <div class="submenu-item" onclick="navigateTo('payment-terms')">Payment Terms</div>
+            </div>
+            <div class="submenu-pin">
+                <button class="pin-btn" onclick="toggleSubmenuPin('master')" title="Pin/Unpin Menu">📌</button>
+            </div>
+        </div>
+        
+        <div class="submenu" id="submenu-config">
+            <div class="submenu-item" onclick="navigateTo('user-setup')">User Setup</div>
+            <div class="submenu-item" onclick="navigateTo('number-series')">Number Series</div>
+            <div class="submenu-item" onclick="navigateTo('posting-groups')">Posting Groups</div>
+            <div class="submenu-item" onclick="navigateTo('dimensions')">Dimensions</div>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <span>🔔</span>
+            <span>👤</span>
+        </div>
+    </div>
+
+    <div class="action-bar">
+        <div class="page-title">Countries:</div>
+        <button class="action-btn">All ▼</button>
+        <button class="action-btn primary" onclick="addNewCountry()">+ New</button>
+        <button class="action-btn" onclick="refreshData()">🔄 Refresh</button>
+        <button class="action-btn" id="saveAllBtn" onclick="saveAllChanges()" disabled>💾 Save Changes</button>
+        <span id="changeCounter" style="margin-left: 12px; color: #605e5c;">0 changes</span>
+    </div>
+
+    <div class="main-layout">
+        <div class="filter-panel">
+            <div class="filter-header">Views</div>
+            <div class="filter-section">
+                <div class="filter-item active" onclick="filterByView('all')">
+                    All Countries
+                    <span class="filter-count" id="count-all">0</span>
+                </div>
+                <div class="filter-item" onclick="filterByView('dirty')">
+                    Modified Records
+                    <span class="filter-count" id="count-dirty">0</span>
+                </div>
+                <div class="filter-item" onclick="filterByView('invalid')">
+                    Invalid Records
+                    <span class="filter-count" id="count-invalid">0</span>
+                </div>
+                <div class="filter-item" onclick="filterByView('active')">
+                    Active Countries
+                    <span class="filter-count" id="count-active">0</span>
+                </div>
+            </div>
+            <div class="filter-section">
+                <div style="font-weight: 600; margin-bottom: 8px;">Filter by...</div>
+                <div style="color: #605e5c; font-size: 12px; margin-bottom: 4px;">Country Name</div>
+                <input type="text" class="filter-input" id="nameFilter" placeholder="Filter by name" oninput="applyFilters()">
+                <div style="color: #605e5c; font-size: 12px; margin: 12px 0 4px 0;">Continent</div>
+                <select class="filter-input" id="continentFilter" onchange="applyFilters()">
+                    <option value="">All Continents</option>
+                    <option value="AF">Africa</option>
+                    <option value="AS">Asia</option>
+                    <option value="EU">Europe</option>
+                    <option value="NA">North America</option>
+                    <option value="SA">South America</option>
+                    <option value="OC">Oceania</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="data-grid">
+            <table class="grid-table">
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Code</th>
+                        <th>Country Name</th>
+                        <th>ISO3</th>
+                        <th>Capital</th>
+                        <th>Continent</th>
+                        <th>Phone Prefix</th>
+                        <th>Active</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr><td colspan="8" style="text-align: center; padding: 40px;">Loading countries...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="details-panel">
+            <div class="details-header">
+                <div class="details-title" id="detailsTitle">Country Details</div>
+                <div class="details-subtitle" id="detailsSubtitle">Select a country to view details</div>
+            </div>
+            <div class="details-content" id="detailsContent">
+                <div class="detail-section">
+                    <div class="detail-section-title">No country selected</div>
+                    <p style="color: #605e5c; font-size: 12px;">Click on a country row to view and edit details.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="validation-tooltip" id="validationTooltip"></div>
+
+    <script src="validation-dirty-manager.js"></script>
+    <script>
+        class CountriesManager {
+            constructor() {
+                this.baseUrl = 'http://localhost:8081/api/v1';
+                this.tenantId = 'default-tenant';
+                this.data = [];
+                this.filteredData = [];
+                this.selectedRow = null;
+                this.currentFilter = 'all';
+                
+                this.schema = {
+                    country_code: { type: 'CHAR(2)', required: true, pattern: /^[A-Z]{2}$/, label: 'Code', editable: true },
+                    country_name: { type: 'VARCHAR(100)', required: true, maxLength: 100, label: 'Name', editable: true },
+                    iso3_code: { type: 'CHAR(3)', pattern: /^[A-Z]{3}$/, label: 'ISO3', editable: true },
+                    capital_city: { type: 'VARCHAR(100)', maxLength: 100, label: 'Capital', editable: true },
+                    continent_code: { 
+                        type: 'ENUM', 
+                        enum: [
+                            { value: 'AF', label: 'Africa' },
+                            { value: 'AS', label: 'Asia' },
+                            { value: 'EU', label: 'Europe' },
+                            { value: 'NA', label: 'North America' },
+                            { value: 'SA', label: 'South America' },
+                            { value: 'OC', label: 'Oceania' }
+                        ], 
+                        label: 'Continent', 
+                        editable: true 
+                    },
+                    phone_prefix: { type: 'VARCHAR(10)', pattern: /^\+\d{1,4}$/, label: 'Phone Prefix', editable: true },
+                    is_active: { 
+                        type: 'BOOLEAN', 
+                        enum: [
+                            { value: true, label: 'Active' },
+                            { value: false, label: 'Inactive' }
+                        ], 
+                        label: 'Active', 
+                        editable: true 
+                    }
+                };
+                
+                this.validator = new ValidationDirtyManager(this.schema);
+                this.validator.enableAutoSave((recordIds) => this.autoSaveRecords(recordIds));
+                
+                this.init();
+            }
+
+            async init() {
+                await this.loadData();
+                this.renderTable();
+                this.setupEventListeners();
+            }
+
+            async loadData() {
+                try {
+                    const response = await fetch(`${this.baseUrl}/countries`, {
+                        headers: { 'X-Tenant-ID': this.tenantId }
+                    });
+                    const result = await response.json();
+                    this.data = result.countries || [];
+                    this.filteredData = [...this.data];
+                } catch (error) {
+                    console.error('Failed to load data:', error);
+                    this.data = [];
+                    this.filteredData = [];
+                }
+            }
+
+            renderTable() {
+                const tbody = document.getElementById('tableBody');
+                
+                if (this.filteredData.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">No countries found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = this.filteredData.map(row => this.renderRow(row)).join('');
+                this.updateFilterCounts();
+                this.updateChangesSummary();
+            }
+
+            renderRow(row) {
+                const rowId = row.country_code;
+                const isDirty = this.validator.dirtyRecords.has(rowId);
+                const isValid = this.validator.isRecordValid(rowId);
+                const isSelected = this.selectedRow === rowId;
+                
+                let rowClass = '';
+                if (isSelected) rowClass += ' selected';
+                if (isDirty) rowClass += isValid ? ' row-dirty' : ' row-invalid';
+
+                return `
+                    <tr class="${rowClass}" data-row-id="${rowId}" onclick="selectRow('${rowId}')">
+                        <td>${this.renderStatusIndicator(rowId)}</td>
+                        <td>${this.renderCell(row, 'country_code', rowId)}</td>
+                        <td>${this.renderCell(row, 'country_name', rowId)}</td>
+                        <td>${this.renderCell(row, 'iso3_code', rowId)}</td>
+                        <td>${this.renderCell(row, 'capital_city', rowId)}</td>
+                        <td>${this.renderCell(row, 'continent_code', rowId)}</td>
+                        <td>${this.renderCell(row, 'phone_prefix', rowId)}</td>
+                        <td>${this.renderCell(row, 'is_active', rowId)}</td>
+                    </tr>
+                `;
+            }
+
+            renderStatusIndicator(rowId) {
+                const isDirty = this.validator.dirtyRecords.has(rowId);
+                const isValid = this.validator.isRecordValid(rowId);
+                
+                if (!isDirty) return '<span class="status-clean">Clean</span>';
+                return isValid ? '<span class="status-dirty">Modified</span>' : '<span class="status-invalid">Invalid</span>';
+            }
+
+            renderCell(row, fieldName, rowId) {
+                const schema = this.schema[fieldName];
+                if (!schema?.editable) return row[fieldName] || '';
+
+                const dirtyData = this.validator.dirtyRecords.get(rowId);
+                const currentValue = dirtyData ? dirtyData.current[fieldName] : row[fieldName];
+                const isDirty = this.validator.getDirtyFields(rowId).includes(fieldName);
+                const isValid = this.validator.validationCache.get(rowId)?.[fieldName] !== false;
+                
+                let cellClass = 'editable-cell';
+                if (isDirty) {
+                    cellClass += isValid ? ' field-dirty-valid dirty-indicator' : ' field-dirty-invalid dirty-indicator';
+                }
+
+                if (schema.type === 'ENUM' || schema.type === 'BOOLEAN') {
+                    const options = schema.enum.map(opt => 
+                        `<option value="${opt.value}" ${currentValue == opt.value ? 'selected' : ''}>${opt.label}</option>`
+                    ).join('');
+                    
+                    return `
+                        <div class="${cellClass}">
+                            <select class="cell-select" 
+                                    onchange="handleCellChange('${rowId}', '${fieldName}', this.value)"
+                                    onmouseover="showValidation(event, '${rowId}', '${fieldName}')"
+                                    onmouseout="hideValidation()">
+                                <option value="">Select...</option>
+                                ${options}
+                            </select>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="${cellClass}">
+                            <input type="text" class="cell-input" 
+                                   value="${currentValue || ''}" 
+                                   onchange="handleCellChange('${rowId}', '${fieldName}', this.value)"
+                                   onmouseover="showValidation(event, '${rowId}', '${fieldName}')"
+                                   onmouseout="hideValidation()"
+                                   ${schema.maxLength ? `maxlength="${schema.maxLength}"` : ''}>
+                        </div>
+                    `;
+                }
+            }
+
+            handleCellChange(rowId, fieldName, newValue) {
+                const originalRow = this.data.find(r => r.country_code === rowId);
+                if (!originalRow) return;
+
+                // Mark field as dirty and validate
+                const isDirty = this.validator.markFieldDirty(rowId, fieldName, newValue, originalRow);
+                
+                if (isDirty) {
+                    const validation = this.validator.validateField(rowId, fieldName, newValue);
+                    this.validator.triggerAutoSave();
+                }
+
+                this.renderTable();
+                if (this.selectedRow === rowId) {
+                    this.updateDetailsPanel(rowId);
+                }
+            }
+
+            showValidation(event, rowId, fieldName) {
+                const dirtyFields = this.validator.getDirtyFields(rowId);
+                if (!dirtyFields.includes(fieldName)) return;
+
+                const validation = this.validator.validationCache.get(rowId)?.[fieldName];
+                const tooltip = document.getElementById('validationTooltip');
+                
+                if (validation === false) {
+                    const dirtyData = this.validator.dirtyRecords.get(rowId);
+                    const value = dirtyData?.current[fieldName];
+                    const result = this.validator.validateField(rowId, fieldName, value);
+                    
+                    tooltip.textContent = result.error || 'Invalid value';
+                    tooltip.className = 'validation-tooltip error';
+                } else if (validation === true) {
+                    tooltip.textContent = '✓ Valid';
+                    tooltip.className = 'validation-tooltip success';
+                } else {
+                    return;
+                }
+
+                tooltip.style.display = 'block';
+                tooltip.style.left = event.pageX + 10 + 'px';
+                tooltip.style.top = event.pageY - 30 + 'px';
+            }
+
+            hideValidation() {
+                document.getElementById('validationTooltip').style.display = 'none';
+            }
+
+            selectRow(rowId) {
+                this.selectedRow = rowId;
+                this.renderTable();
+                this.updateDetailsPanel(rowId);
+            }
+
+            updateDetailsPanel(rowId) {
+                const row = this.data.find(r => r.country_code === rowId);
+                if (!row) return;
+
+                const isDirty = this.validator.dirtyRecords.has(rowId);
+                const dirtyData = this.validator.dirtyRecords.get(rowId);
+                const currentData = dirtyData ? dirtyData.current : row;
+
+                document.getElementById('detailsTitle').textContent = currentData.country_name || 'Unnamed Country';
+                document.getElementById('detailsSubtitle').textContent = `Country Code: ${rowId}`;
+
+                let detailsHtml = `
+                    <div class="detail-section">
+                        <div class="detail-section-title">Basic Information</div>
+                        <div class="detail-row">
+                            <span class="detail-label">Country Code</span>
+                            <span class="detail-value">${currentData.country_code}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Country Name</span>
+                            <span class="detail-value">${currentData.country_name || '-'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Status</span>
+                            <span class="detail-value">${isDirty ? 'Modified' : 'Clean'}</span>
+                        </div>
+                    </div>
+                `;
+
+                if (isDirty) {
+                    const changes = this.validator.getRecordChanges(rowId);
+                    detailsHtml += `
+                        <div class="detail-section">
+                            <div class="detail-section-title">Pending Changes</div>
+                            ${Object.entries(changes).map(([field, change]) => `
+                                <div class="detail-row">
+                                    <span class="detail-label">${this.schema[field].label}</span>
+                                    <span class="detail-value" style="color: #d83b01;">${change.old || '(empty)'} → ${change.new || '(empty)'}</span>
+                                </div>
+                            `).join('')}
+                            <div style="margin-top: 12px;">
+                                <button class="action-btn primary" onclick="saveRow('${rowId}')" ${!this.validator.isRecordValid(rowId) ? 'disabled' : ''}>Save Changes</button>
+                                <button class="action-btn" onclick="revertRow('${rowId}')" style="margin-left: 8px;">Revert</button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                document.getElementById('detailsContent').innerHTML = detailsHtml;
+            }
+
+            updateFilterCounts() {
+                const counts = {
+                    all: this.data.length,
+                    dirty: this.validator.getDirtyRecords().length,
+                    invalid: this.validator.getDirtyRecords().filter(id => !this.validator.isRecordValid(id)).length,
+                    active: this.data.filter(r => r.is_active).length
+                };
+
+                Object.entries(counts).forEach(([key, count]) => {
+                    const element = document.getElementById(`count-${key}`);
+                    if (element) element.textContent = count;
+                });
+            }
+
+            updateChangesSummary() {
+                const summary = this.validator.getChangesSummary();
+                const counterSpan = document.getElementById('changeCounter');
+                const saveAllBtn = document.getElementById('saveAllBtn');
+                
+                counterSpan.textContent = `${summary.totalFields} change${summary.totalFields !== 1 ? 's' : ''}`;
+                
+                if (summary.totalFields === 0) {
+                    saveAllBtn.disabled = true;
+                    saveAllBtn.textContent = '💾 Save Changes';
+                } else {
+                    saveAllBtn.disabled = summary.validRecords === 0;
+                    saveAllBtn.textContent = `💾 Save ${summary.totalFields} Change${summary.totalFields > 1 ? 's' : ''}`;
+                }
+            }
+
+            async saveRow(rowId) {
+                if (!this.validator.isRecordValid(rowId)) {
+                    alert('Please fix validation errors before saving.');
+                    return;
+                }
+
+                const changes = this.validator.getRecordChanges(rowId);
+                if (!changes) return;
+
+                try {
+                    const response = await fetch(`${this.baseUrl}/countries/${rowId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Tenant-ID': this.tenantId
+                        },
+                        body: JSON.stringify(Object.fromEntries(
+                            Object.entries(changes).map(([field, change]) => [field, change.new])
+                        ))
+                    });
+
+                    if (response.ok) {
+                        // Update original data
+                        const originalRow = this.data.find(r => r.country_code === rowId);
+                        const dirtyData = this.validator.dirtyRecords.get(rowId);
+                        Object.assign(originalRow, dirtyData.current);
+                        
+                        this.validator.revertRecord(rowId);
+                        this.renderTable();
+                        if (this.selectedRow === rowId) {
+                            this.updateDetailsPanel(rowId);
+                        }
+                    } else {
+                        const errorData = await response.json();
+                        alert(`Error: ${errorData.error?.message || 'Unknown error'}`);
+                    }
+                } catch (error) {
+                    alert(`Error: ${error.message}`);
+                }
+            }
+
+            revertRow(rowId) {
+                this.validator.revertRecord(rowId);
+                this.renderTable();
+                if (this.selectedRow === rowId) {
+                    this.updateDetailsPanel(rowId);
+                }
+            }
+
+            async saveAllChanges() {
+                const validRecords = this.validator.getValidDirtyRecords();
+                if (validRecords.length === 0) return;
+
+                for (const recordId of validRecords) {
+                    await this.saveRow(recordId);
+                }
+            }
+
+            async autoSaveRecords(recordIds) {
+                console.log('Auto-saving records:', recordIds);
+                // Auto-save implementation
+            }
+
+            setupEventListeners() {
+                // Setup any additional event listeners
+            }
+        }
+
+        // Initialize
+        const countriesManager = new CountriesManager();
+
+        // Global functions
+        function handleCellChange(rowId, fieldName, value) {
+            countriesManager.handleCellChange(rowId, fieldName, value);
+        }
+
+        function selectRow(rowId) {
+            countriesManager.selectRow(rowId);
+        }
+
+        function saveRow(rowId) {
+            countriesManager.saveRow(rowId);
+        }
+
+        function revertRow(rowId) {
+            countriesManager.revertRow(rowId);
+        }
+
+        function saveAllChanges() {
+            countriesManager.saveAllChanges();
+        }
+
+        function showValidation(event, rowId, fieldName) {
+            countriesManager.showValidation(event, rowId, fieldName);
+        }
+
+        function hideValidation() {
+            countriesManager.hideValidation();
+        }
+
+        function filterByView(view) {
+            document.querySelectorAll('.filter-item').forEach(item => item.classList.remove('active'));
+            event.target.classList.add('active');
+            countriesManager.currentFilter = view;
+            applyFilters();
+        }
+
+        function applyFilters() {
+            // Filter implementation
+        }
+
+        function addNewCountry() {
+            alert('Add new country functionality');
+        }
+
+        function refreshData() {
+            countriesManager.init();
+        }
+        
+        function showSubmenu(event, menuType) {
+            const submenu = document.getElementById(`submenu-${menuType}`);
+            if (!submenu) return;
+            
+            // Don't hide if pinned
+            if (submenu.classList.contains('pinned')) return;
+            
+            // Hide all non-pinned submenus
+            document.querySelectorAll('.submenu:not(.pinned)').forEach(menu => {
+                if (menu !== submenu) menu.style.display = 'none';
+            });
+            
+            // Show selected submenu
+            submenu.style.display = 'block';
+            
+            // Clear any existing timeout
+            if (submenu.hideTimeout) {
+                clearTimeout(submenu.hideTimeout);
+            }
+            
+            // Set up mouse leave handler
+            submenu.onmouseleave = () => {
+                if (!submenu.classList.contains('pinned')) {
+                    submenu.hideTimeout = setTimeout(() => {
+                        submenu.style.display = 'none';
+                    }, 300);
+                }
+            };
+            
+            // Cancel hide on mouse enter
+            submenu.onmouseenter = () => {
+                if (submenu.hideTimeout) {
+                    clearTimeout(submenu.hideTimeout);
+                }
+            };
+        }
+        
+        function toggleSubmenuPin(menuType) {
+            const submenu = document.getElementById(`submenu-${menuType}`);
+            const pinBtn = submenu.querySelector('.pin-btn');
+            
+            if (submenu.classList.contains('pinned')) {
+                // Unpin
+                submenu.classList.remove('pinned');
+                pinBtn.classList.remove('pinned');
+                pinBtn.textContent = '📌';
+                localStorage.setItem(`submenu-${menuType}-pinned`, 'false');
+            } else {
+                // Pin
+                submenu.classList.add('pinned');
+                pinBtn.classList.add('pinned');
+                pinBtn.textContent = '📍';
+                submenu.style.display = 'block';
+                localStorage.setItem(`submenu-${menuType}-pinned`, 'true');
+            }
+        }
+        
+        // Load pinned state on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            ['master', 'finance', 'reference', 'config'].forEach(menuType => {
+                const isPinned = localStorage.getItem(`submenu-${menuType}-pinned`) === 'true';
+                if (isPinned) {
+                    const submenu = document.getElementById(`submenu-${menuType}`);
+                    const pinBtn = submenu?.querySelector('.pin-btn');
+                    if (submenu && pinBtn) {
+                        submenu.classList.add('pinned');
+                        pinBtn.classList.add('pinned');
+                        pinBtn.textContent = '📍';
+                        submenu.style.display = 'block';
+                    }
+                }
+            });
+        });
+        
+        function navigateTo(page) {
+            // Hide submenu
+            document.querySelectorAll('.submenu').forEach(menu => menu.style.display = 'none');
+            
+            // Update active states
+            document.querySelectorAll('.submenu-item').forEach(item => item.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update page title and maintain layout
+            const pageTitle = document.querySelector('.page-title');
+            const detailsTitle = document.getElementById('detailsTitle');
+            const detailsSubtitle = document.getElementById('detailsSubtitle');
+            
+            switch(page) {
+                case 'countries':
+                    pageTitle.textContent = 'Countries:';
+                    detailsTitle.textContent = 'Country Details';
+                    detailsSubtitle.textContent = 'Select a country to view details';
+                    break;
+                case 'regions':
+                    pageTitle.textContent = 'Regions:';
+                    detailsTitle.textContent = 'Region Details';
+                    detailsSubtitle.textContent = 'Select a region to view details';
+                    loadPageContent('regions');
+                    break;
+                case 'languages':
+                    pageTitle.textContent = 'Languages:';
+                    detailsTitle.textContent = 'Language Details';
+                    detailsSubtitle.textContent = 'Select a language to view details';
+                    loadPageContent('languages');
+                    break;
+                case 'timezones':
+                    pageTitle.textContent = 'Time Zones:';
+                    detailsTitle.textContent = 'Time Zone Details';
+                    detailsSubtitle.textContent = 'Select a time zone to view details';
+                    loadPageContent('timezones');
+                    break;
+                case 'subdivisions':
+                    pageTitle.textContent = 'Subdivisions:';
+                    detailsTitle.textContent = 'Subdivision Details';
+                    detailsSubtitle.textContent = 'Select a subdivision to view details';
+                    loadPageContent('subdivisions');
+                    break;
+                case 'currencies':
+                    pageTitle.textContent = 'Currencies:';
+                    detailsTitle.textContent = 'Currency Details';
+                    detailsSubtitle.textContent = 'Select a currency to view details';
+                    loadPageContent('currencies');
+                    break;
+                case 'fx-rates':
+                    pageTitle.textContent = 'FX Rates:';
+                    detailsTitle.textContent = 'FX Rate Details';
+                    detailsSubtitle.textContent = 'Select an FX rate to view details';
+                    loadPageContent('fx-rates');
+                    break;
+                default:
+                    pageTitle.textContent = `${page.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}:`;
+                    detailsTitle.textContent = `${page.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())} Details`;
+                    detailsSubtitle.textContent = `Select an item to view details`;
+                    loadPageContent(page);
+            }
+        }
+        
+        function navigateToDashboard() {
+            window.location.href = 'index.html';
+        }
+        
+        function loadPageContent(page) {
+            // Maintain the three-panel layout structure
+            const tableBody = document.getElementById('tableBody');
+            const detailsContent = document.getElementById('detailsContent');
+            
+            // Show loading state
+            tableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px;">Loading ${page}...</td></tr>`;
+            detailsContent.innerHTML = `
+                <div class="detail-section">
+                    <div class="detail-section-title">No ${page.slice(0, -1)} selected</div>
+                    <p style="color: #605e5c; font-size: 12px;">Click on a ${page.slice(0, -1)} row to view and edit details.</p>
+                </div>
+            `;
+            
+            // Simulate loading different content while maintaining layout
+            setTimeout(() => {
+                tableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px; color: #605e5c;">No ${page} data available. This feature is coming soon.</td></tr>`;
+            }, 500);
+        }
+        
+        // Hide submenus when clicking outside or mouse leaves header area
+        document.addEventListener('click', (event) => {
+            if (!event.target.closest('.top-header')) {
+                document.querySelectorAll('.submenu:not(.pinned)').forEach(menu => menu.style.display = 'none');
+            }
+        });
+        
+        // Hide submenus when mouse leaves header area
+        document.querySelector('.top-header').addEventListener('mouseleave', () => {
+            setTimeout(() => {
+                document.querySelectorAll('.submenu:not(.pinned)').forEach(menu => {
+                    if (!menu.matches(':hover')) {
+                        menu.style.display = 'none';
+                    }
+                });
+            }, 500);
+        });
+    </script>
+</body>
+</html>

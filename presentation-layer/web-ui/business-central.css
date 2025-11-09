@@ -1,0 +1,1106 @@
+/* Enterprise Business Central Styles - Carbon Design System */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'IBM Plex Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    background: #f4f4f4;
+    overflow: hidden;
+    color: #161616;
+}
+
+/* Business Central Header Rows - Carbon Design */
+.bc-header-row1 {
+    height: 48px;
+    background: #161616;
+    color: #f4f4f4;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    border-bottom: 1px solid #393939;
+}
+
+.bc-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.bc-app-menu {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 2px;
+}
+
+.bc-app-menu:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.bc-app-title {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.bc-separator {
+    margin: 0 12px;
+    opacity: 0.6;
+}
+
+.bc-platform-title {
+    font-size: 14px;
+    font-weight: 400;
+    opacity: 0.8;
+}
+
+.bc-header-right {
+    display: flex;
+    align-items: center;
+}
+
+.bc-icons {
+    display: flex;
+    gap: 4px;
+}
+
+.bc-icon-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+}
+
+.bc-icon-btn:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+/* Row 2: Tenant & Domain Navigation */
+.bc-header-row2 {
+    height: 40px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+}
+
+.bc-tenant-info {
+    margin-right: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bc-tenant-info i {
+    color: #0f62fe;
+    font-size: 14px;
+}
+
+.bc-tenant-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #161616;
+}
+
+.bc-tenant-separator {
+    color: #8d8d8d;
+    margin: 0 4px;
+}
+
+.bc-dashboard-link {
+    font-size: 14px;
+    color: #0f62fe;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.bc-dashboard-link:hover {
+    text-decoration: underline;
+}
+
+.bc-domain-nav {
+    display: flex;
+    gap: 2px;
+}
+
+.bc-nav-item {
+    position: relative;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 12px;
+    border-radius: 2px;
+    color: #605e5c;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bc-nav-item:hover {
+    background: #e1dfdd;
+}
+
+.bc-nav-item.active {
+    background: #0078d4;
+    color: white;
+}
+
+.bc-nav-item i {
+    font-size: 10px;
+    transition: transform 0.2s;
+}
+
+.bc-nav-item.open i {
+    transform: rotate(180deg);
+}
+
+.bc-submenu {
+    position: absolute;
+    top: 100%;
+    left: -16px;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    width: 100vw;
+    z-index: 1000;
+    display: none;
+}
+
+.bc-nav-item:hover .bc-submenu,
+.bc-nav-item.pinned .bc-submenu {
+    display: block;
+}
+
+.bc-nav-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 8px;
+    padding: 16px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Full-width rectangular navigation boxes - Carbon Design */
+.bc-nav-box-full {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    padding: 16px;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 0;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+    min-height: 56px;
+    margin-bottom: 0;
+}
+
+.bc-nav-box-full:hover {
+    background: #f4f4f4;
+    border-color: #0f62fe;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(15,98,254,0.2);
+}
+
+.bc-nav-box-full i {
+    font-size: 20px;
+    color: #0f62fe;
+    width: 24px;
+    text-align: center;
+    margin-right: 16px;
+}
+
+.bc-nav-box-full span {
+    font-size: 14px;
+    color: #161616;
+    font-weight: 400;
+    flex: 1;
+    line-height: 1.29;
+}
+
+.bc-nav-box-full .bc-nav-box-pin {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    opacity: 0;
+    transition: all 0.2s ease;
+    margin-left: 8px;
+}
+
+.bc-nav-box-full:hover .bc-nav-box-pin {
+    opacity: 1;
+}
+
+.bc-nav-box-full .bc-nav-box-pin:hover {
+    background: #dee2e6;
+    opacity: 1;
+}
+
+.bc-nav-box-full .bc-nav-box-pin.pinned {
+    background: #0078d4;
+    color: white;
+    opacity: 1;
+}
+
+/* Legacy nav-box styles for backward compatibility */
+.bc-nav-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    position: relative;
+}
+
+.bc-nav-box-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.bc-nav-box-pin {
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    opacity: 0.6;
+}
+
+.bc-nav-box-pin:hover {
+    background: #e9ecef;
+    opacity: 1;
+}
+
+.bc-nav-box-pin.pinned {
+    background: #0078d4;
+    color: white;
+    opacity: 1;
+}
+
+.bc-nav-box:hover {
+    background: #e9ecef;
+    border-color: #0078d4;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,120,212,0.2);
+}
+
+.bc-nav-box i {
+    font-size: 18px;
+    color: #0078d4;
+    margin-bottom: 6px;
+}
+
+.bc-nav-box span {
+    font-size: 11px;
+    color: #323130;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+/* Row 3: Entity Toolbar - Carbon Design */
+.bc-header-row3 {
+    height: 48px;
+    background: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.bc-entity-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.bc-entity-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #323130;
+}
+
+.bc-entity-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.bc-action-btn {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #8d8d8d;
+    background: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0;
+    color: #161616;
+    transition: all 0.15s ease;
+}
+
+.bc-action-btn:hover {
+    background: #e5e5e5;
+    border-color: #161616;
+}
+
+.bc-toolbar-right {
+    display: flex;
+    gap: 4px;
+}
+
+.bc-panel-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #8a8886;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    color: #323130;
+}
+
+.bc-panel-btn:hover {
+    background: #f3f2f1;
+    border-color: #323130;
+}
+
+.bc-panel-btn.active {
+    background: #0078d4;
+    color: white;
+    border-color: #0078d4;
+}
+
+/* Pin Button */
+.bc-pin-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: rgba(255,255,255,0.8);
+    border-radius: 2px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+}
+
+.bc-submenu:hover .bc-pin-btn {
+    display: flex;
+}
+
+.bc-pin-btn:hover {
+    background: #f3f2f1;
+}
+
+.bc-pin-btn.pinned {
+    background: #0078d4;
+    color: white;
+}
+
+/* Ribbon */
+.ribbon {
+    height: 28px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+}
+
+.ribbon-tab {
+    padding: 6px 16px;
+    cursor: pointer;
+    font-size: 11px;
+    border: 1px solid transparent;
+    margin-right: 2px;
+}
+
+.ribbon-tab:hover {
+    background: #e9ecef;
+    border-color: #dee2e6;
+}
+
+.ribbon-tab.active {
+    background: white;
+    border-color: #dee2e6;
+    border-bottom-color: white;
+}
+
+/* Ribbon Content */
+.ribbon-content {
+    height: 92px;
+    background: white;
+    border-bottom: 1px solid #dee2e6;
+    padding: 4px;
+}
+
+.ribbon-panel {
+    display: none;
+    height: 100%;
+    flex-direction: row;
+    gap: 1px;
+}
+
+.ribbon-panel.active {
+    display: flex;
+}
+
+.ribbon-group {
+    border: 1px solid #dee2e6;
+    padding: 4px;
+    min-width: 120px;
+    position: relative;
+}
+
+.group-title {
+    position: absolute;
+    bottom: 2px;
+    left: 4px;
+    font-size: 10px;
+    color: #666;
+}
+
+.ribbon-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4px 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    margin: 2px;
+    min-width: 50px;
+    font-size: 10px;
+}
+
+.ribbon-btn:hover {
+    border-color: #4a90e2;
+    background: #f0f8ff;
+}
+
+.ribbon-btn.large {
+    min-height: 60px;
+    min-width: 60px;
+}
+
+.ribbon-btn i {
+    font-size: 16px;
+    margin-bottom: 2px;
+    color: #4a90e2;
+}
+
+.ribbon-btn.large i {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+
+.ribbon-input {
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+    font-size: 11px;
+    width: 120px;
+    margin: 2px;
+}
+
+/* Status Bar */
+.status-bar {
+    height: 22px;
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 8px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    font-size: 11px;
+}
+
+.status-left, .status-right {
+    display: flex;
+    gap: 16px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #666;
+}
+
+/* Main Content */
+.main-content {
+    display: flex;
+    height: calc(100vh - 158px);
+    background: #ffffff;
+}
+
+/* Filter Pane */
+.nav-pane {
+    width: 250px;
+    background: #f8f9fa;
+    border-right: 1px solid #dee2e6;
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-header {
+    height: 32px;
+    background: #e9ecef;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    font-weight: 600;
+    font-size: 11px;
+}
+
+.nav-toggle {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.filter-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.filter-section {
+    margin-bottom: 16px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: white;
+}
+
+.filter-title {
+    background: #f8f9fa;
+    padding: 8px 12px;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: 600;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-title i {
+    color: #4a90e2;
+    width: 14px;
+}
+
+.filter-options {
+    padding: 8px 12px;
+}
+
+.filter-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.filter-option input[type="checkbox"] {
+    margin: 0;
+}
+
+.date-range {
+    margin-bottom: 8px;
+}
+
+.date-range label {
+    display: block;
+    font-size: 10px;
+    color: #666;
+    margin-bottom: 2px;
+}
+
+.filter-date {
+    width: 100%;
+    padding: 4px 6px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    font-size: 11px;
+}
+
+.quick-filter {
+    display: block;
+    width: 100%;
+    padding: 6px 8px;
+    margin-bottom: 4px;
+    border: 1px solid #dee2e6;
+    background: white;
+    text-align: left;
+    font-size: 11px;
+    cursor: pointer;
+    border-radius: 2px;
+}
+
+.quick-filter:hover {
+    background: #f8f9fa;
+}
+
+.quick-filter.active {
+    background: #4a90e2;
+    color: white;
+    border-color: #4a90e2;
+}
+
+.filter-actions {
+    padding: 12px;
+    border-top: 1px solid #dee2e6;
+    background: #f8f9fa;
+    display: flex;
+    gap: 8px;
+    flex-direction: column;
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 10px;
+}
+
+/* Info Panel */
+.info-panel {
+    width: 300px;
+    background: #f8f9fa;
+    border-left: 1px solid #dee2e6;
+    display: none;
+    flex-direction: column;
+}
+
+.info-header {
+    height: 32px;
+    background: #e9ecef;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    font-weight: 600;
+    font-size: 11px;
+}
+
+.info-header button {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.info-content {
+    flex: 1;
+    padding: 12px;
+    font-size: 11px;
+}
+
+/* Data Area */
+.data-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.data-header {
+    height: 32px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: #666;
+}
+
+.breadcrumb .current {
+    color: #333;
+    font-weight: 600;
+}
+
+.view-controls {
+    display: flex;
+    gap: 2px;
+}
+
+.view-btn {
+    width: 28px;
+    height: 24px;
+    border: 1px solid #ccc;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.view-btn:hover {
+    background: #f8f9fa;
+}
+
+.view-btn.active {
+    background: #4a90e2;
+    color: white;
+    border-color: #4a90e2;
+}
+
+/* Data Grid */
+.data-grid {
+    flex: 1;
+    overflow: auto;
+    background: white;
+}
+
+.grid-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+.grid-table th {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    padding: 6px 8px;
+    text-align: left;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.grid-table th.sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.grid-table th.sortable:hover {
+    background: #e9ecef;
+}
+
+.grid-table th i {
+    margin-left: 4px;
+    color: #666;
+    font-size: 10px;
+}
+
+.grid-table td {
+    border: 1px solid #dee2e6;
+    padding: 4px 8px;
+    vertical-align: middle;
+}
+
+.grid-table tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+.grid-table tr:hover {
+    background: #e3f2fd;
+}
+
+.grid-table tr.selected {
+    background: #bbdefb;
+}
+
+.select-col {
+    width: 30px;
+    text-align: center;
+}
+
+.actions-col {
+    width: 80px;
+    text-align: center;
+}
+
+.action-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 2px 4px;
+    margin: 0 1px;
+    border-radius: 2px;
+}
+
+.action-btn:hover {
+    background: #e9ecef;
+}
+
+.status-badge {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 500;
+}
+
+.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #666;
+}
+
+.loading-spinner i {
+    font-size: 24px;
+    color: #4a90e2;
+}
+
+/* Dialog */
+.dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.dialog {
+    background: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    width: 600px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.dialog-header {
+    height: 32px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+}
+
+.dialog-header h3 {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.dialog-close {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 2px;
+}
+
+.dialog-close:hover {
+    background: #e9ecef;
+}
+
+.dialog-content {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.form-group.checkbox-group {
+    flex-direction: row;
+    align-items: center;
+}
+
+.form-group label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input,
+.form-group select {
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    font-size: 11px;
+    border-radius: 2px;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 2px rgba(74,144,226,0.2);
+}
+
+.dialog-footer {
+    height: 48px;
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 16px;
+    gap: 8px;
+}
+
+.btn {
+    padding: 6px 16px;
+    border: 1px solid #ccc;
+    background: white;
+    cursor: pointer;
+    font-size: 11px;
+    border-radius: 2px;
+}
+
+.btn:hover {
+    background: #f8f9fa;
+}
+
+.btn-primary {
+    background: #4a90e2;
+    border-color: #4a90e2;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #357abd;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+/* Responsive - Carbon Design System breakpoints */
+@media (max-width: 1056px) {
+    .bc-nav-grid {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+    
+    .nav-pane {
+        width: 200px;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 672px) {
+    .bc-nav-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .bc-submenu {
+        position: fixed;
+        top: 88px;
+        left: 0;
+        right: 0;
+        margin-left: 0;
+        width: 100vw;
+        max-width: 100vw;
+    }
+    
+    .bc-header-row2 {
+        flex-direction: column;
+        height: auto;
+        padding: 8px 16px;
+    }
+    
+    .bc-domain-nav {
+        width: 100%;
+        justify-content: space-between;
+    }
+}

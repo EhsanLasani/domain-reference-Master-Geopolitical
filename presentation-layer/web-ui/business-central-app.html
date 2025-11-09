@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LASANI Platform - Business Central</title>
+    <link rel="stylesheet" href="business-central-styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Windows Toolbar -->
+    <div class="windows-toolbar">
+        <div class="windows-controls">
+            <button class="window-btn minimize"><i class="fas fa-minus"></i></button>
+            <button class="window-btn maximize"><i class="fas fa-square"></i></button>
+            <button class="window-btn close"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="window-title">LASANI Platform - Business Central</div>
+    </div>
+
+    <!-- Application Toolbar -->
+    <div class="app-toolbar">
+        <div class="toolbar-left">
+            <button class="toolbar-btn" id="homeBtn"><i class="fas fa-home"></i> Home</button>
+            <button class="toolbar-btn" id="newBtn"><i class="fas fa-plus"></i> New</button>
+            <button class="toolbar-btn" id="saveBtn"><i class="fas fa-save"></i> Save</button>
+            <button class="toolbar-btn" id="refreshBtn"><i class="fas fa-sync"></i> Refresh</button>
+        </div>
+        <div class="toolbar-center">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search records..." id="globalSearch">
+            </div>
+        </div>
+        <div class="toolbar-right">
+            <button class="toolbar-btn" id="settingsBtn"><i class="fas fa-cog"></i></button>
+            <button class="toolbar-btn" id="userBtn"><i class="fas fa-user"></i> Admin</button>
+        </div>
+    </div>
+
+    <!-- Header Submenu (Rectangular Blocks) -->
+    <div class="header-submenu">
+        <div class="submenu-block active" data-domain="geopolitical">
+            <i class="fas fa-globe"></i>
+            <span>Geopolitical</span>
+            <button class="pin-btn" data-pinned="true"><i class="fas fa-thumbtack"></i></button>
+        </div>
+        <div class="submenu-block" data-domain="commerce">
+            <i class="fas fa-coins"></i>
+            <span>Commerce</span>
+            <button class="pin-btn" data-pinned="false"><i class="fas fa-thumbtack"></i></button>
+        </div>
+        <div class="submenu-block" data-domain="tenant">
+            <i class="fas fa-building"></i>
+            <span>Tenant Mgmt</span>
+            <button class="pin-btn" data-pinned="false"><i class="fas fa-thumbtack"></i></button>
+        </div>
+        <div class="submenu-block" data-domain="iam">
+            <i class="fas fa-users"></i>
+            <span>Identity & Access</span>
+            <button class="pin-btn" data-pinned="false"><i class="fas fa-thumbtack"></i></button>
+        </div>
+    </div>
+
+    <!-- Navigation Links -->
+    <div class="navigation-panel">
+        <div class="nav-section" id="geopolitical-nav">
+            <div class="nav-header">
+                <i class="fas fa-globe"></i> Geopolitical Reference
+            </div>
+            <div class="nav-links">
+                <a href="#" class="nav-link active" data-table="countries">Countries</a>
+                <a href="#" class="nav-link" data-table="regions">Regions</a>
+                <a href="#" class="nav-link" data-table="languages">Languages</a>
+                <a href="#" class="nav-link" data-table="timezones">Timezones</a>
+                <a href="#" class="nav-link" data-table="subdivisions">Subdivisions</a>
+                <a href="#" class="nav-link" data-table="locales">Locales</a>
+            </div>
+        </div>
+        
+        <div class="nav-section" id="commerce-nav" style="display:none;">
+            <div class="nav-header">
+                <i class="fas fa-coins"></i> Commerce Reference
+            </div>
+            <div class="nav-links">
+                <a href="#" class="nav-link" data-table="currencies">Currencies</a>
+                <a href="#" class="nav-link" data-table="fx-rates">FX Rates</a>
+                <a href="#" class="nav-link" data-table="uom">Units of Measure</a>
+                <a href="#" class="nav-link" data-table="trade-terms">Trade Terms</a>
+                <a href="#" class="nav-link" data-table="tax-regimes">Tax Regimes</a>
+                <a href="#" class="nav-link" data-table="payment-terms">Payment Terms</a>
+            </div>
+        </div>
+        
+        <div class="nav-section" id="tenant-nav" style="display:none;">
+            <div class="nav-header">
+                <i class="fas fa-building"></i> Tenant Management
+            </div>
+            <div class="nav-links">
+                <a href="#" class="nav-link" data-table="tenants">Tenants</a>
+                <a href="#" class="nav-link" data-table="subscriptions">Subscriptions</a>
+                <a href="#" class="nav-link" data-table="billing">Billing</a>
+                <a href="#" class="nav-link" data-table="usage">Usage Counters</a>
+            </div>
+        </div>
+        
+        <div class="nav-section" id="iam-nav" style="display:none;">
+            <div class="nav-header">
+                <i class="fas fa-users"></i> Identity & Access
+            </div>
+            <div class="nav-links">
+                <a href="#" class="nav-link" data-table="users">Users</a>
+                <a href="#" class="nav-link" data-table="roles">Roles</a>
+                <a href="#" class="nav-link" data-table="permissions">Permissions</a>
+                <a href="#" class="nav-link" data-table="sessions">Sessions</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Toolbar -->
+    <div class="transaction-toolbar">
+        <div class="toolbar-section">
+            <button class="trans-btn" id="addRecordBtn"><i class="fas fa-plus"></i> Add</button>
+            <button class="trans-btn" id="editRecordBtn" disabled><i class="fas fa-edit"></i> Edit</button>
+            <button class="trans-btn" id="deleteRecordBtn" disabled><i class="fas fa-trash"></i> Delete</button>
+        </div>
+        <div class="toolbar-section">
+            <button class="trans-btn" id="saveChangesBtn" disabled><i class="fas fa-save"></i> Save Changes</button>
+            <button class="trans-btn" id="cancelChangesBtn" disabled><i class="fas fa-times"></i> Cancel</button>
+        </div>
+        <div class="toolbar-section">
+            <button class="trans-btn" id="exportBtn"><i class="fas fa-download"></i> Export</button>
+            <button class="trans-btn" id="importBtn"><i class="fas fa-upload"></i> Import</button>
+        </div>
+        <div class="toolbar-section">
+            <span class="record-count">Records: <span id="recordCount">0</span></span>
+            <span class="dirty-indicator" id="dirtyIndicator" style="display:none;">
+                <i class="fas fa-exclamation-triangle"></i> Unsaved Changes
+            </span>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Data Table Container -->
+        <div class="table-container">
+            <table class="data-table" id="dataTable">
+                <thead id="tableHeader">
+                    <!-- Dynamic headers based on selected table -->
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Dynamic content -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div class="loading-indicator" id="loadingIndicator" style="display:none;">
+            <i class="fas fa-spinner fa-spin"></i> Loading data...
+        </div>
+
+        <!-- No Data Message -->
+        <div class="no-data-message" id="noDataMessage" style="display:none;">
+            <i class="fas fa-inbox"></i>
+            <p>No records found</p>
+            <button class="btn-primary" onclick="addNewRecord()">Add First Record</button>
+        </div>
+    </div>
+
+    <!-- Validation Panel -->
+    <div class="validation-panel" id="validationPanel" style="display:none;">
+        <div class="validation-header">
+            <i class="fas fa-exclamation-triangle"></i> Validation Errors
+            <button class="close-btn" onclick="closeValidationPanel()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="validation-content" id="validationContent">
+            <!-- Dynamic validation messages -->
+        </div>
+    </div>
+
+    <!-- Record Edit Modal -->
+    <div class="modal-overlay" id="editModal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Edit Record</h3>
+                <button class="close-btn" onclick="closeEditModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Dynamic form fields -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeEditModal()">Cancel</button>
+                <button class="btn-primary" onclick="saveRecord()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="status-left">
+            <span id="connectionStatus">Connected to: geopolitical.domain_reference_master_geopolitical</span>
+        </div>
+        <div class="status-center">
+            <span id="currentTable">Countries</span> | 
+            <span id="selectedRows">0 selected</span>
+        </div>
+        <div class="status-right">
+            <span id="lastUpdate">Last updated: <span id="updateTime">--:--</span></span>
+        </div>
+    </div>
+
+    <script src="business-central-app.js"></script>
+</body>
+</html>

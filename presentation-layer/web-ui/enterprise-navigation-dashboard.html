@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LASANI Platform - Enterprise Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8f9fa; overflow-x: hidden; }
+        
+        .top-header {
+            background: #0078d4; color: white; height: 48px;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 16px;
+        }
+        .company-name { font-size: 14px; font-weight: 600; }
+        .user-info { display: flex; gap: 12px; align-items: center; }
+        
+        .main-container { padding: 20px; }
+        .page-title { font-size: 24px; font-weight: 600; color: #323130; margin-bottom: 8px; }
+        .page-subtitle { color: #605e5c; font-size: 14px; margin-bottom: 30px; }
+        
+        /* Navigation Grid */
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 1200px;
+            margin-bottom: 40px;
+        }
+        
+        .nav-box {
+            background: white;
+            border: 1px solid #e1dfdd;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .nav-box:hover {
+            border-color: #0078d4;
+            box-shadow: 0 4px 12px rgba(0, 120, 212, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .nav-box.pinned {
+            border-color: #0078d4;
+            background: linear-gradient(135deg, #f0f8ff 0%, #ffffff 100%);
+        }
+        
+        .nav-box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .nav-box-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .pin-btn {
+            background: none;
+            border: none;
+            color: #605e5c;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        
+        .pin-btn:hover { background: #f3f2f1; color: #323130; }
+        .pin-btn.pinned { color: #0078d4; }
+        
+        .nav-box-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #323130;
+            margin-bottom: 8px;
+        }
+        
+        .nav-box-desc {
+            color: #605e5c;
+            font-size: 13px;
+            line-height: 1.4;
+            flex-grow: 1;
+        }
+        
+        .nav-box-status {
+            margin-top: 12px;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            align-self: flex-start;
+        }
+        
+        .status-active { background: #dff6dd; color: #107c10; }
+        .status-development { background: #fff3cd; color: #856404; }
+        .status-planned { background: #f3f2f1; color: #605e5c; }
+        
+        /* Data Grid Section */
+        .data-section {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: #f8f9fa;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e1dfdd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-title { font-size: 18px; font-weight: 600; color: #323130; }
+        
+        .section-controls {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 6px 12px;
+            border: 1px solid #8a8886;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover { background: #f3f2f1; }
+        .btn.primary { background: #0078d4; color: white; border-color: #0078d4; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        /* Inline Edit Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        
+        .data-table th {
+            background: #f8f9fa;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #323130;
+            border-bottom: 1px solid #e1dfdd;
+        }
+        
+        .data-table td {
+            padding: 8px 16px;
+            border-bottom: 1px solid #f3f2f1;
+            vertical-align: middle;
+        }
+        
+        .data-table tr:hover { background: #f8f9fa; }
+        .data-table tr.selected { background: #deecf9; }
+        .data-table tr.dirty { background: #fff3cd; }
+        .data-table tr.invalid { background: #f8d7da; }
+        
+        /* Inline Editing */
+        .editable-cell {
+            position: relative;
+            cursor: pointer;
+            min-width: 120px;
+        }
+        
+        .editable-cell:hover { background: #e9ecef; }
+        
+        .cell-input, .cell-select {
+            width: 100%;
+            border: 1px solid #8a8886;
+            padding: 4px 8px;
+            font-size: 13px;
+            background: white;
+        }
+        
+        .cell-input.valid { border-color: #107c10; background: #f3f9f1; }
+        .cell-input.invalid { border-color: #d83b01; background: #fef6f6; }
+        
+        .dirty-indicator::after {
+            content: "●";
+            position: absolute;
+            right: 4px;
+            top: 4px;
+            color: #d83b01;
+            font-size: 10px;
+        }
+        
+        /* Status Badges */
+        .status-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        .badge-clean { background: #dff6dd; color: #107c10; }
+        .badge-dirty { background: #fed9cc; color: #d83b01; }
+        .badge-invalid { background: #d83b01; color: white; }
+        
+        /* Validation Tooltip */
+        .validation-tooltip {
+            position: absolute;
+            background: #323130;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 1000;
+            max-width: 250px;
+            display: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .validation-tooltip.error { background: #d83b01; }
+        .validation-tooltip.success { background: #107c10; }
+        
+        /* Change Summary */
+        .changes-panel {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 12px 16px;
+            margin: 16px 20px;
+            display: none;
+        }
+        
+        .changes-title { font-weight: 600; color: #856404; margin-bottom: 8px; }
+        .change-item { font-size: 12px; color: #856404; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+    <div class="top-header">
+        <div class="company-name">LASANI PLATFORM</div>
+        <div class="user-info">
+            <span>🔔</span>
+            <span>👤 Admin User</span>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <h1 class="page-title">Enterprise Dashboard</h1>
+        <p class="page-subtitle">Manage reference data, users, and system configuration</p>
+
+        <!-- Navigation Grid -->
+        <div class="nav-grid">
+            <!-- Row 1 -->
+            <div class="nav-box" onclick="navigateToModule('countries')" data-module="countries">
+                <div class="nav-box-header">
+                    <div class="nav-box-icon">🌍</div>
+                    <button class="pin-btn" onclick="togglePin(event, 'countries')">📌</button>
+                </div>
+                <div class="nav-box-title">Countries</div>
+                <div class="nav-box-desc">Manage country master data with ISO codes, regions, and localization settings</div>
+                <div class="nav-box-status status-active">Active</div>
+            </div>
+
+            <div class="nav-box" onclick="navigateToModule('currencies')" data-module="currencies">
+                <div class="nav-box-header">
+                    <div class="nav-box-icon">💰</div>
+                    <button class="pin-btn" onclick="togglePin(event, 'currencies')">📌</button>
+                </div>
+                <div class="nav-box-title">Currencies</div>
+                <div class="nav-box-desc">Currency definitions, exchange rates, and financial formatting rules</div>
+                <div class="nav-box-status status-development">Development</div>
+            </div>
+
+            <div class="nav-box" onclick="navigateToModule('users')" data-module="users">
+                <div class="nav-box-header">
+                    <div class="nav-box-icon">👥</div>
+                    <button class="pin-btn" onclick="togglePin(event, 'users')">📌</button>
+                </div>
+                <div class="nav-box-title">User Management</div>
+                <div class="nav-box-desc">User accounts, roles, permissions, and authentication settings</div>
+                <div class="nav-box-status status-development">Development</div>
+            </div>
+
+            <!-- Row 2 -->
+            <div class="nav-box" onclick="navigateToModule('tenants')" data-module="tenants">
+                <div class="nav-box-header">
+                    <div class="nav-box-icon">🏢</div>
+                    <button class="pin-btn" onclick="togglePin(event, 'tenants')">📌</button>
+                </div>
+                <div class="nav-box-title">Tenant Management</div>
+                <div class="nav-box-desc">Organization hierarchy, subscriptions, billing, and compliance</div>
+                <div class="nav-box-status status-development">Development</div>
+            </div>
+
+            <div class="nav-box" onclick="navigateToModule('languages')" data-module="languages">
+                <div class="nav-box-header">
+                    <div class="nav-box-icon">🗣️</div>
+                    <button class="pin-btn" onclick="togglePin(event, 'languages')">📌</button>
+                </div>
+                <div class="nav-box-title">Languages</div>
+                <div class="nav-box-desc">Language catalog, locales, translations, and internationalization</div>
+                <div class="nav-box-status status-active">Active</div>
+            </div>
+
+            <div class="nav-box" onclick="navigateToModule('regions')" data-module="regions">
+                <div class="nav-box-header">
+                    <div class="nav-box-icon">🗺️</div>
+                    <button class="pin-btn" onclick="togglePin(event, 'regions')">📌</button>
+                </div>
+                <div class="nav-box-title">Regions</div>
+                <div class="nav-box-desc">Geographic regions, subdivisions, and administrative boundaries</div>
+                <div class="nav-box-status status-active">Active</div>
+            </div>
+
+            <!-- Row 3 -->
+            <div class="nav-box" onclick="navigateToModule('tax-regimes')" data-module="tax-regimes">
+                <div class="nav-box-header">
+                    <div class="nav-box-icon">📊</div>
+                    <button class="pin-btn" onclick="togglePin(event, 'tax-regimes')">📌</button>
+                </div>
+                <div class="nav-box-title">Tax Regimes</div>
+                <div class="nav-box-desc">Tax zones, categories, rates, and compliance mappings</div>
+                <div class="nav-box-status status-planned">Planned</div>
+            </div>
+
+            <div class="nav-box" onclick="navigateToModule('trade-terms')" data-module="trade-terms">
+                <div class="nav-box-header">
+                    <div class="nav-box-icon">🚚</div>
+                    <button class="pin-btn" onclick="togglePin(event, 'trade-terms')">📌</button>
+                </div>
+                <div class="nav-box-title">Trade Terms</div>
+                <div class="nav-box-desc">INCOTERMS, shipping methods, carriers, and logistics</div>
+                <div class="nav-box-status status-planned">Planned</div>
+            </div>
+
+            <div class="nav-box" onclick="navigateToModule('system-config')" data-module="system-config">
+                <div class="nav-box-header">
+                    <div class="nav-box-icon">⚙️</div>
+                    <button class="pin-btn" onclick="togglePin(event, 'system-config')">📌</button>
+                </div>
+                <div class="nav-box-title">System Config</div>
+                <div class="nav-box-desc">Application settings, feature flags, and system parameters</div>
+                <div class="nav-box-status status-development">Development</div>
+            </div>
+        </div>
+
+        <!-- Data Section -->
+        <div class="data-section">
+            <div class="section-header">
+                <div class="section-title">Countries - Quick Edit</div>
+                <div class="section-controls">
+                    <button class="btn" onclick="refreshData()">🔄 Refresh</button>
+                    <button class="btn primary" onclick="addNewRecord()">+ Add Country</button>
+                    <button class="btn" id="saveChangesBtn" onclick="saveAllChanges()" disabled>💾 Save Changes</button>
+                    <span id="changeCounter" style="margin-left: 12px; color: #605e5c;">0 changes</span>
+                </div>
+            </div>
+
+            <div id="changesPanel" class="changes-panel">
+                <div class="changes-title">Pending Changes</div>
+                <div id="changesContent"></div>
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Code</th>
+                        <th>Country Name</th>
+                        <th>ISO3</th>
+                        <th>Capital</th>
+                        <th>Continent</th>
+                        <th>Phone Prefix</th>
+                        <th>Active</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTableBody">
+                    <tr><td colspan="8" style="text-align: center; padding: 40px;">Loading data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="validation-tooltip" id="validationTooltip"></div>
+
+    <script src="validation-dirty-manager.js"></script>
+    <script>
+        class EnterpriseDashboard {
+            constructor() {
+                this.baseUrl = 'http://localhost:8081/api/v1';
+                this.tenantId = 'default-tenant';
+                this.data = [];
+                this.pinnedModules = JSON.parse(localStorage.getItem('pinnedModules') || '[]');
+                
+                this.schema = {
+                    country_code: { type: 'CHAR(2)', required: true, pattern: /^[A-Z]{2}$/, label: 'Code', editable: true },
+                    country_name: { type: 'VARCHAR(100)', required: true, maxLength: 100, label: 'Name', editable: true },
+                    iso3_code: { type: 'CHAR(3)', pattern: /^[A-Z]{3}$/, label: 'ISO3', editable: true },
+                    capital_city: { type: 'VARCHAR(100)', maxLength: 100, label: 'Capital', editable: true },
+                    continent_code: { 
+                        type: 'ENUM', 
+                        enum: [
+                            { value: 'AF', label: 'Africa' },
+                            { value: 'AS', label: 'Asia' },
+                            { value: 'EU', label: 'Europe' },
+                            { value: 'NA', label: 'North America' },
+                            { value: 'SA', label: 'South America' },
+                            { value: 'OC', label: 'Oceania' }
+                        ], 
+                        label: 'Continent', 
+                        editable: true 
+                    },
+                    phone_prefix: { type: 'VARCHAR(10)', pattern: /^\+\d{1,4}$/, label: 'Phone Prefix', editable: true },
+                    is_active: { 
+                        type: 'BOOLEAN', 
+                        enum: [
+                            { value: true, label: 'Active' },
+                            { value: false, label: 'Inactive' }
+                        ], 
+                        label: 'Active', 
+                        editable: true 
+                    }
+                };
+                
+                this.validator = new ValidationDirtyManager(this.schema);
+                this.init();
+            }
+
+            async init() {
+                this.loadPinnedModules();
+                await this.loadData();
+                this.renderTable();
+            }
+
+            loadPinnedModules() {
+                this.pinnedModules.forEach(moduleId => {
+                    const box = document.querySelector(`[data-module="${moduleId}"]`);
+                    const pin = box?.querySelector('.pin-btn');
+                    if (box && pin) {
+                        box.classList.add('pinned');
+                        pin.classList.add('pinned');
+                    }
+                });
+            }
+
+            async loadData() {
+                try {
+                    const response = await fetch(`${this.baseUrl}/countries`, {
+                        headers: { 'X-Tenant-ID': this.tenantId }
+                    });
+                    const result = await response.json();
+                    this.data = result.countries || [];
+                } catch (error) {
+                    console.error('Failed to load data:', error);
+                    this.data = [];
+                }
+            }
+
+            renderTable() {
+                const tbody = document.getElementById('dataTableBody');
+                
+                if (this.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">No countries found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = this.data.slice(0, 10).map(row => this.renderRow(row)).join('');
+                this.updateChangesSummary();
+            }
+
+            renderRow(row) {
+                const rowId = row.country_code;
+                const isDirty = this.validator.dirtyRecords.has(rowId);
+                const isValid = this.validator.isRecordValid(rowId);
+                
+                let rowClass = '';
+                if (isDirty) rowClass += isValid ? ' dirty' : ' invalid';
+
+                return `
+                    <tr class="${rowClass}" data-row-id="${rowId}">
+                        <td>${this.renderStatusBadge(rowId)}</td>
+                        <td>${this.renderCell(row, 'country_code', rowId)}</td>
+                        <td>${this.renderCell(row, 'country_name', rowId)}</td>
+                        <td>${this.renderCell(row, 'iso3_code', rowId)}</td>
+                        <td>${this.renderCell(row, 'capital_city', rowId)}</td>
+                        <td>${this.renderCell(row, 'continent_code', rowId)}</td>
+                        <td>${this.renderCell(row, 'phone_prefix', rowId)}</td>
+                        <td>${this.renderCell(row, 'is_active', rowId)}</td>
+                    </tr>
+                `;
+            }
+
+            renderStatusBadge(rowId) {
+                const isDirty = this.validator.dirtyRecords.has(rowId);
+                const isValid = this.validator.isRecordValid(rowId);
+                
+                if (!isDirty) return '<span class="status-badge badge-clean">Clean</span>';
+                return isValid ? '<span class="status-badge badge-dirty">Modified</span>' : '<span class="status-badge badge-invalid">Invalid</span>';
+            }
+
+            renderCell(row, fieldName, rowId) {
+                const schema = this.schema[fieldName];
+                if (!schema?.editable) return row[fieldName] || '';
+
+                const dirtyData = this.validator.dirtyRecords.get(rowId);
+                const currentValue = dirtyData ? dirtyData.current[fieldName] : row[fieldName];
+                const isDirty = this.validator.getDirtyFields(rowId).includes(fieldName);
+                const isValid = this.validator.validationCache.get(rowId)?.[fieldName] !== false;
+                
+                let cellClass = 'editable-cell';
+                if (isDirty) {
+                    cellClass += isValid ? ' dirty-indicator' : ' dirty-indicator';
+                }
+
+                if (schema.type === 'ENUM' || schema.type === 'BOOLEAN') {
+                    const options = schema.enum.map(opt => 
+                        `<option value="${opt.value}" ${currentValue == opt.value ? 'selected' : ''}>${opt.label}</option>`
+                    ).join('');
+                    
+                    return `
+                        <div class="${cellClass}">
+                            <select class="cell-select ${isValid ? 'valid' : 'invalid'}" 
+                                    onchange="handleCellChange('${rowId}', '${fieldName}', this.value)"
+                                    onmouseover="showValidation(event, '${rowId}', '${fieldName}')"
+                                    onmouseout="hideValidation()">
+                                <option value="">Select...</option>
+                                ${options}
+                            </select>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="${cellClass}">
+                            <input type="text" class="cell-input ${isValid ? 'valid' : 'invalid'}" 
+                                   value="${currentValue || ''}" 
+                                   onchange="handleCellChange('${rowId}', '${fieldName}', this.value)"
+                                   onmouseover="showValidation(event, '${rowId}', '${fieldName}')"
+                                   onmouseout="hideValidation()"
+                                   ${schema.maxLength ? `maxlength="${schema.maxLength}"` : ''}>
+                        </div>
+                    `;
+                }
+            }
+
+            handleCellChange(rowId, fieldName, newValue) {
+                const originalRow = this.data.find(r => r.country_code === rowId);
+                if (!originalRow) return;
+
+                const isDirty = this.validator.markFieldDirty(rowId, fieldName, newValue, originalRow);
+                
+                if (isDirty) {
+                    this.validator.validateField(rowId, fieldName, newValue);
+                }
+
+                this.renderTable();
+            }
+
+            showValidation(event, rowId, fieldName) {
+                const dirtyFields = this.validator.getDirtyFields(rowId);
+                if (!dirtyFields.includes(fieldName)) return;
+
+                const validation = this.validator.validationCache.get(rowId)?.[fieldName];
+                const tooltip = document.getElementById('validationTooltip');
+                
+                if (validation === false) {
+                    const dirtyData = this.validator.dirtyRecords.get(rowId);
+                    const value = dirtyData?.current[fieldName];
+                    const result = this.validator.validateField(rowId, fieldName, value);
+                    
+                    tooltip.textContent = result.error || 'Invalid value';
+                    tooltip.className = 'validation-tooltip error';
+                } else if (validation === true) {
+                    tooltip.textContent = '✓ Valid';
+                    tooltip.className = 'validation-tooltip success';
+                } else {
+                    return;
+                }
+
+                tooltip.style.display = 'block';
+                tooltip.style.left = event.pageX + 10 + 'px';
+                tooltip.style.top = event.pageY - 30 + 'px';
+            }
+
+            hideValidation() {
+                document.getElementById('validationTooltip').style.display = 'none';
+            }
+
+            updateChangesSummary() {
+                const summary = this.validator.getChangesSummary();
+                const counterSpan = document.getElementById('changeCounter');
+                const saveBtn = document.getElementById('saveChangesBtn');
+                const changesPanel = document.getElementById('changesPanel');
+                
+                counterSpan.textContent = `${summary.totalFields} change${summary.totalFields !== 1 ? 's' : ''}`;
+                
+                if (summary.totalFields === 0) {
+                    saveBtn.disabled = true;
+                    changesPanel.style.display = 'none';
+                } else {
+                    saveBtn.disabled = summary.validRecords === 0;
+                    changesPanel.style.display = 'block';
+                    
+                    const changesHtml = Array.from(this.validator.dirtyRecords.entries()).map(([rowId, data]) => {
+                        const changes = Array.from(data.dirtyFields).map(field => {
+                            const schema = this.schema[field];
+                            const oldVal = data.original[field] || '';
+                            const newVal = data.current[field] || '';
+                            return `${schema.label}: ${oldVal || '(empty)'} → ${newVal || '(empty)'}`;
+                        }).join(', ');
+                        return `<div class="change-item">${rowId}: ${changes}</div>`;
+                    }).join('');
+                    
+                    document.getElementById('changesContent').innerHTML = changesHtml;
+                }
+            }
+        }
+
+        // Initialize dashboard
+        const dashboard = new EnterpriseDashboard();
+
+        // Global functions
+        function togglePin(event, moduleId) {
+            event.stopPropagation();
+            
+            const box = document.querySelector(`[data-module="${moduleId}"]`);
+            const pin = event.target;
+            
+            if (box.classList.contains('pinned')) {
+                box.classList.remove('pinned');
+                pin.classList.remove('pinned');
+                dashboard.pinnedModules = dashboard.pinnedModules.filter(id => id !== moduleId);
+            } else {
+                box.classList.add('pinned');
+                pin.classList.add('pinned');
+                dashboard.pinnedModules.push(moduleId);
+            }
+            
+            localStorage.setItem('pinnedModules', JSON.stringify(dashboard.pinnedModules));
+        }
+
+        function navigateToModule(moduleId) {
+            switch(moduleId) {
+                case 'countries':
+                    window.location.href = 'business-central-countries.html';
+                    break;
+                case 'languages':
+                    window.location.href = 'languages-crud.html';
+                    break;
+                case 'regions':
+                    window.location.href = 'regions-crud.html';
+                    break;
+                default:
+                    alert(`${moduleId.replace('-', ' ')} module - Coming Soon`);
+            }
+        }
+
+        function handleCellChange(rowId, fieldName, value) {
+            dashboard.handleCellChange(rowId, fieldName, value);
+        }
+
+        function showValidation(event, rowId, fieldName) {
+            dashboard.showValidation(event, rowId, fieldName);
+        }
+
+        function hideValidation() {
+            dashboard.hideValidation();
+        }
+
+        function refreshData() {
+            dashboard.init();
+        }
+
+        function addNewRecord() {
+            alert('Add new record functionality - Coming Soon');
+        }
+
+        function saveAllChanges() {
+            alert('Save all changes functionality - Coming Soon');
+        }
+    </script>
+</body>
+</html>

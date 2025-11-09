@@ -65,7 +65,7 @@ func (s *CountryAppService) CreateCountry(ctx context.Context, tenantID string, 
 
 	// Business validation
 	if country.CountryCode == "" || country.CountryName == "" {
-		return errors.NewValidationError("country code and name are required")
+		return errors.NewValidationError("country_code", "country code and name are required")
 	}
 
 	// Reference data - no tenant context needed
@@ -94,7 +94,7 @@ func (s *CountryAppService) GetCountryByCode(ctx context.Context, tenantID, coun
 
 	// Business validation
 	if countryCode == "" {
-		return nil, errors.NewValidationError("country code is required")
+		return nil, errors.NewValidationError("country_code", "country code is required")
 	}
 
 	// Reference data lookup

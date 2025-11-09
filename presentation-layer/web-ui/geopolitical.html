@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geopolitical Reference - LASANI Platform</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="enhanced-styles.css">
+</head>
+<body>
+    <!-- Enhanced Header -->
+    <header class="enhanced-header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <i class="fas fa-cube"></i>
+                </div>
+                <div>
+                    <h1 class="platform-title">LASANI</h1>
+                    <p class="platform-subtitle">Enterprise Platform - Business Central</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="tenant-info">
+                    <i class="fas fa-building"></i>
+                    <span>Default Tenant</span>
+                </div>
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Admin</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Enhanced Navigation -->
+    <nav class="enhanced-nav">
+        <div class="nav-content">
+            <a href="#" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </a>
+            <a href="#" class="nav-item active">
+                <i class="fas fa-globe"></i>
+                <span>Geopolitical</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-coins"></i>
+                <span>Commerce</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-building"></i>
+                <span>Tenants</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>IAM</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-code"></i>
+                <span>API</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Enhanced Domain Content -->
+    <main class="enhanced-domain">
+        <!-- Domain Header -->
+        <div class="domain-header">
+            <div class="domain-title">
+                <div class="icon">
+                    <i class="fas fa-globe"></i>
+                </div>
+                <div>
+                    <h1>Geopolitical Reference</h1>
+                    <p>Countries, regions, languages, timezones, and localization master data</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Entity Tabs -->
+        <div class="entity-tabs">
+            <button class="entity-tab active" data-entity="countries">
+                <i class="fas fa-flag"></i>
+                <span>Countries</span>
+            </button>
+            <button class="entity-tab" data-entity="regions">
+                <i class="fas fa-map"></i>
+                <span>Regions</span>
+            </button>
+            <button class="entity-tab" data-entity="languages">
+                <i class="fas fa-language"></i>
+                <span>Languages</span>
+            </button>
+            <button class="entity-tab" data-entity="timezones">
+                <i class="fas fa-clock"></i>
+                <span>Timezones</span>
+            </button>
+            <button class="entity-tab" data-entity="subdivisions">
+                <i class="fas fa-sitemap"></i>
+                <span>Subdivisions</span>
+            </button>
+            <button class="entity-tab" data-entity="locales">
+                <i class="fas fa-globe-americas"></i>
+                <span>Locales</span>
+            </button>
+        </div>
+
+        <!-- Enhanced Data Grid -->
+        <div id="dataGrid"></div>
+    </main>
+
+    <script src="data-grid.js"></script>
+    <script>
+        let currentGrid = null;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEntityTabs();
+            loadEntityData('countries');
+        });
+
+        function initializeEntityTabs() {
+            document.querySelectorAll('.entity-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.entity-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const entity = this.getAttribute('data-entity');
+                    loadEntityData(entity);
+                });
+            });
+        }
+
+        function loadEntityData(entity) {
+            // Initialize data grid for the selected entity
+            currentGrid = new LasaniDataGrid('dataGrid', {
+                entity: entity,
+                apiEndpoint: '/api/v1',
+                editable: true,
+                selectable: true
+            });
+        }
+    </script>
+</body>
+</html>

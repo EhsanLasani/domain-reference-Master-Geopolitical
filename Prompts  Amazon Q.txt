@@ -1,0 +1,8 @@
+@check the project - domain-reference-Master-Geopolitical status & implementation against guidelines - docs\development-guide , verify against layer by layer
+@refer to database: geopolitical, Schema : referencemaster - align all layers based on entities all aspect.
+
+@refer to database: geopolitical, Schema : referencemaster - align all layers based on entities all aspect. Auto update of schema changes shall be move across all layer and must be maintain, 
+
+@ Presentation Build - output based business-central design,style, working. We have four major domain to current development read domain context at docs\Domains. You organise Windows toolbar, application toolbar -  header (common for all pages),  submenu ( Rectangular block,Navigation link from table - entities from schema/s,  +pin/unpin, transaction tool bar (refe to table) and table record inline-editing capabilities, Validation/verification & dirty record management. 
+@use Carbon design system to give enterprise looks
+@ Improvement .. for /business-central.html#.. Check images, Ist Row window ( Business Central --- Lasani Platform ) with icon on rightside, 2nd Row - Tenant Name ( Home/Dashboard) and header as per single domain or comibing domaiin, Its include mecahnism of submenu, 3rd row - It transaction tool bar, Name ( entities/tables), with right corner menu for leftside filters panel, right panels information ) ,data export , book mark

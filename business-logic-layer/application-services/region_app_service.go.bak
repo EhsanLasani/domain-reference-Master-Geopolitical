@@ -10,10 +10,10 @@ import (
 
 type RegionAppService struct {
 	regionRepo *repositories.RegionRepository
-	logger     *logging.StructuredLogger
+	logger     logging.Logger
 }
 
-func NewRegionAppService(regionRepo *repositories.RegionRepository, logger *logging.StructuredLogger) *RegionAppService {
+func NewRegionAppService(regionRepo *repositories.RegionRepository, logger logging.Logger) *RegionAppService {
 	return &RegionAppService{
 		regionRepo: regionRepo,
 		logger:     logger,

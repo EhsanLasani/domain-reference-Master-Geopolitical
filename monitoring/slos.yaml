@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: geopolitical-slos
+data:
+  slos.yaml: |
+    slos:
+      - name: country_api_availability
+        description: "Country API availability SLO"
+        target: 99.9%
+        error_budget: 0.1%
+        window: 30d
+        indicators:
+          - name: http_requests_success_rate
+            query: |
+              sum(rate(http_requests_total{job="geopolitical-service",code!~"5.."}[5m])) /
+              sum(rate(http_requests_total{job="geopolitical-service"}[5m]))
+        
+      - name: country_api_latency
+        description: "Country API latency SLO"
+        target: 95%
+        threshold: 200ms
+        window: 30d
+        indicators:
+          - name: http_request_duration_p95
+            query: |
+              histogram_quantile(0.95, 
+                sum(rate(http_request_duration_seconds_bucket{job="geopolitical-service"}[5m])) by (le)
+              )
+      
+      - name: database_query_performance
+        description: "Database query performance SLO"
+        target: 99%
+        threshold: 100ms
+        window: 7d
+        indicators:
+          - name: db_query_duration_p99
+            query: |
+              histogram_quantile(0.99,
+                sum(rate(db_query_duration_seconds_bucket{job="geopolitical-service"}[5m])) by (le)
+              )
+
+    alerts:
+      - name: high_error_rate
+        condition: |
+          sum(rate(http_requests_total{job="geopolitical-service",code=~"5.."}[5m])) /
+          sum(rate(http_requests_total{job="geopolitical-service"}[5m])) > 0.05
+        severity: critical
+        description: "Error rate above 5%"
+        
+      - name: high_latency
+        condition: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket{job="geopolitical-service"}[5m])) by (le)
+          ) > 0.5
+        severity: warning
+        description: "95th percentile latency above 500ms"
+        
+      - name: database_slow_queries
+        condition: |
+          histogram_quantile(0.95,
+            sum(rate(db_query_duration_seconds_bucket{job="geopolitical-service"}[5m])) by (le)
+          ) > 0.1
+        severity: warning
+        description: "Database queries taking longer than 100ms"

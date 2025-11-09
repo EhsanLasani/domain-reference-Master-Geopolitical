@@ -1,0 +1,511 @@
+/* Carbon Design System Implementation for LASANI Platform */
+
+/* Import Carbon Design System */
+@import url('https://unpkg.com/carbon-components@10.58.0/css/carbon-components.min.css');
+
+/* Carbon Color Tokens */
+:root {
+  --cds-background: #ffffff;
+  --cds-background-inverse: #393939;
+  --cds-background-brand: #0f62fe;
+  --cds-background-active: #c6c6c6;
+  --cds-background-selected: #e0e0e0;
+  --cds-background-hover: #f4f4f4;
+  
+  --cds-layer-01: #f4f4f4;
+  --cds-layer-02: #ffffff;
+  --cds-layer-03: #f4f4f4;
+  
+  --cds-field-01: #f4f4f4;
+  --cds-field-02: #ffffff;
+  
+  --cds-border-subtle-01: #e0e0e0;
+  --cds-border-subtle-02: #c6c6c6;
+  --cds-border-strong-01: #8d8d8d;
+  
+  --cds-text-primary: #161616;
+  --cds-text-secondary: #525252;
+  --cds-text-placeholder: #a8a8a8;
+  --cds-text-on-color: #ffffff;
+  --cds-text-inverse: #ffffff;
+  
+  --cds-link-primary: #0f62fe;
+  --cds-link-secondary: #0043ce;
+  
+  --cds-icon-primary: #161616;
+  --cds-icon-secondary: #525252;
+  
+  --cds-support-error: #da1e28;
+  --cds-support-success: #24a148;
+  --cds-support-warning: #f1c21b;
+  --cds-support-info: #0043ce;
+  
+  --cds-focus: #0f62fe;
+  
+  /* Carbon Typography */
+  --cds-productive-heading-01: 400 14px/18px 'IBM Plex Sans', sans-serif;
+  --cds-productive-heading-02: 400 16px/22px 'IBM Plex Sans', sans-serif;
+  --cds-productive-heading-03: 400 20px/26px 'IBM Plex Sans', sans-serif;
+  --cds-productive-heading-04: 400 28px/36px 'IBM Plex Sans', sans-serif;
+  --cds-productive-heading-05: 400 32px/40px 'IBM Plex Sans', sans-serif;
+  
+  --cds-body-compact-01: 400 14px/18px 'IBM Plex Sans', sans-serif;
+  --cds-body-compact-02: 400 16px/22px 'IBM Plex Sans', sans-serif;
+  --cds-body-01: 400 14px/20px 'IBM Plex Sans', sans-serif;
+  --cds-body-02: 400 16px/24px 'IBM Plex Sans', sans-serif;
+  
+  --cds-code-01: 400 12px/16px 'IBM Plex Mono', monospace;
+  --cds-code-02: 400 14px/20px 'IBM Plex Mono', monospace;
+  
+  --cds-label-01: 400 12px/16px 'IBM Plex Sans', sans-serif;
+  --cds-label-02: 400 14px/18px 'IBM Plex Sans', sans-serif;
+  
+  --cds-helper-text-01: 400 12px/16px 'IBM Plex Sans', sans-serif;
+  --cds-helper-text-02: 400 14px/18px 'IBM Plex Sans', sans-serif;
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font: var(--cds-body-01);
+  color: var(--cds-text-primary);
+  background-color: var(--cds-background);
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+}
+
+/* Carbon Header */
+.bx--header {
+  background-color: var(--cds-background-inverse);
+  border-bottom: 1px solid var(--cds-border-subtle-01);
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 6000;
+}
+
+.bx--header__name {
+  font: var(--cds-productive-heading-02);
+  color: var(--cds-text-inverse);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 32px;
+}
+
+.bx--header__nav {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex: 1;
+}
+
+.bx--header__menu-item {
+  color: var(--cds-text-inverse);
+  text-decoration: none;
+  padding: 0 16px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  font: var(--cds-body-compact-02);
+  transition: background-color 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
+}
+
+.bx--header__menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.bx--header__menu-item--current {
+  background-color: var(--cds-background-brand);
+}
+
+.bx--header__global {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-left: auto;
+}
+
+/* Carbon Side Navigation */
+.bx--side-nav {
+  background-color: var(--cds-layer-01);
+  border-right: 1px solid var(--cds-border-subtle-01);
+  width: 256px;
+  height: calc(100vh - 48px);
+  position: fixed;
+  top: 48px;
+  left: 0;
+  z-index: 5000;
+  overflow-y: auto;
+}
+
+.bx--side-nav__items {
+  padding: 16px 0;
+}
+
+.bx--side-nav__item {
+  margin-bottom: 1px;
+}
+
+.bx--side-nav__link {
+  color: var(--cds-text-primary);
+  text-decoration: none;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font: var(--cds-body-compact-01);
+  transition: background-color 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
+}
+
+.bx--side-nav__link:hover {
+  background-color: var(--cds-background-hover);
+}
+
+.bx--side-nav__link--current {
+  background-color: var(--cds-background-selected);
+  border-right: 3px solid var(--cds-background-brand);
+}
+
+.bx--side-nav__icon {
+  width: 16px;
+  height: 16px;
+  fill: var(--cds-icon-primary);
+}
+
+/* Carbon Content Area */
+.bx--content {
+  margin-left: 256px;
+  margin-top: 48px;
+  padding: 32px;
+  min-height: calc(100vh - 48px);
+  background-color: var(--cds-background);
+}
+
+/* Carbon Data Table */
+.bx--data-table-container {
+  background-color: var(--cds-layer-02);
+  border: 1px solid var(--cds-border-subtle-01);
+}
+
+.bx--data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font: var(--cds-body-compact-01);
+}
+
+.bx--data-table thead {
+  background-color: var(--cds-layer-01);
+}
+
+.bx--data-table th {
+  padding: 16px;
+  text-align: left;
+  font: var(--cds-label-01);
+  color: var(--cds-text-primary);
+  border-bottom: 1px solid var(--cds-border-subtle-01);
+  background-color: var(--cds-layer-01);
+}
+
+.bx--data-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--cds-border-subtle-01);
+  color: var(--cds-text-primary);
+}
+
+.bx--data-table tbody tr:hover {
+  background-color: var(--cds-background-hover);
+}
+
+.bx--data-table tbody tr.bx--data-table--selected {
+  background-color: var(--cds-background-selected);
+}
+
+/* Carbon Buttons */
+.bx--btn {
+  font: var(--cds-body-compact-01);
+  padding: 12px 16px;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
+  min-height: 48px;
+}
+
+.bx--btn--primary {
+  background-color: var(--cds-background-brand);
+  color: var(--cds-text-on-color);
+}
+
+.bx--btn--primary:hover {
+  background-color: #0353e9;
+}
+
+.bx--btn--secondary {
+  background-color: transparent;
+  color: var(--cds-text-primary);
+  border: 1px solid var(--cds-border-strong-01);
+}
+
+.bx--btn--secondary:hover {
+  background-color: var(--cds-background-hover);
+}
+
+.bx--btn--ghost {
+  background-color: transparent;
+  color: var(--cds-link-primary);
+  border: 1px solid transparent;
+}
+
+.bx--btn--ghost:hover {
+  background-color: var(--cds-background-hover);
+}
+
+.bx--btn--danger {
+  background-color: var(--cds-support-error);
+  color: var(--cds-text-on-color);
+}
+
+.bx--btn--danger:hover {
+  background-color: #ba1b23;
+}
+
+.bx--btn:disabled {
+  background-color: var(--cds-background-active);
+  color: var(--cds-text-placeholder);
+  cursor: not-allowed;
+}
+
+/* Carbon Form Elements */
+.bx--form-item {
+  margin-bottom: 24px;
+}
+
+.bx--label {
+  font: var(--cds-label-01);
+  color: var(--cds-text-primary);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.bx--text-input {
+  font: var(--cds-body-01);
+  padding: 12px 16px;
+  border: none;
+  border-bottom: 1px solid var(--cds-border-strong-01);
+  background-color: var(--cds-field-01);
+  color: var(--cds-text-primary);
+  width: 100%;
+  transition: all 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
+}
+
+.bx--text-input:focus {
+  outline: 2px solid var(--cds-focus);
+  outline-offset: -2px;
+  border-bottom-color: var(--cds-focus);
+}
+
+.bx--select {
+  position: relative;
+}
+
+.bx--select-input {
+  font: var(--cds-body-01);
+  padding: 12px 16px;
+  border: none;
+  border-bottom: 1px solid var(--cds-border-strong-01);
+  background-color: var(--cds-field-01);
+  color: var(--cds-text-primary);
+  width: 100%;
+  appearance: none;
+}
+
+/* Carbon Toolbar */
+.bx--toolbar {
+  background-color: var(--cds-layer-01);
+  border-bottom: 1px solid var(--cds-border-subtle-01);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.bx--toolbar__content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Carbon Tags */
+.bx--tag {
+  font: var(--cds-label-01);
+  padding: 4px 8px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bx--tag--green {
+  background-color: #d4f1d4;
+  color: #198038;
+}
+
+.bx--tag--red {
+  background-color: #ffd7d9;
+  color: #750e13;
+}
+
+.bx--tag--blue {
+  background-color: #d0e2ff;
+  color: #0043ce;
+}
+
+.bx--tag--gray {
+  background-color: var(--cds-background-active);
+  color: var(--cds-text-primary);
+}
+
+/* Carbon Loading */
+.bx--loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  font: var(--cds-body-01);
+  color: var(--cds-text-secondary);
+}
+
+.bx--loading__svg {
+  animation: bx--rotate 2s linear infinite;
+  width: 24px;
+  height: 24px;
+  margin-right: 12px;
+}
+
+@keyframes bx--rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Carbon Modal */
+.bx--modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(22, 22, 22, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9000;
+}
+
+.bx--modal-container {
+  background-color: var(--cds-background);
+  max-width: 768px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.bx--modal-header {
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid var(--cds-border-subtle-01);
+}
+
+.bx--modal-header__heading {
+  font: var(--cds-productive-heading-03);
+  color: var(--cds-text-primary);
+  margin: 0;
+}
+
+.bx--modal-content {
+  padding: 24px;
+}
+
+.bx--modal-footer {
+  padding: 16px 24px 24px;
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+}
+
+/* Carbon Notification */
+.bx--toast-notification {
+  background-color: var(--cds-background);
+  border-left: 4px solid var(--cds-support-info);
+  padding: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.bx--toast-notification--error {
+  border-left-color: var(--cds-support-error);
+}
+
+.bx--toast-notification--success {
+  border-left-color: var(--cds-support-success);
+}
+
+.bx--toast-notification--warning {
+  border-left-color: var(--cds-support-warning);
+}
+
+/* Responsive Design */
+@media (max-width: 1056px) {
+  .bx--side-nav {
+    transform: translateX(-100%);
+    transition: transform 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
+  }
+  
+  .bx--side-nav--expanded {
+    transform: translateX(0);
+  }
+  
+  .bx--content {
+    margin-left: 0;
+  }
+}
+
+/* Custom LASANI Enhancements */
+.lasani-brand {
+  color: #0f62fe;
+  font-weight: 600;
+}
+
+.lasani-status-active {
+  color: var(--cds-support-success);
+}
+
+.lasani-status-inactive {
+  color: var(--cds-text-secondary);
+}
+
+.lasani-compliance-badge {
+  background: linear-gradient(135deg, #0f62fe, #0043ce);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font: var(--cds-label-01);
+  font-weight: 600;
+}

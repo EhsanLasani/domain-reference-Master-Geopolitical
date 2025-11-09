@@ -26,18 +26,19 @@ type Container struct {
 	CountryRepository repositories.CountryRepositoryInterface
 	CountryAppService *applicationservices.CountryAppService
 	RegionRepository  *repositories.RegionRepository
-	RegionAppService  *applicationservices.RegionAppService
 	LanguageRepository *repositories.LanguageRepository
-	LanguageAppService *applicationservices.LanguageAppService
 }
 
 // NewContainer creates and initializes the application container
 func NewContainer(cfg *config.Config, logger logging.Logger) (*Container, error) {
 	// Initialize tracing
-	tracer := tracing.NewTracer("geopolitical-service")
+	tracer, err := tracing.NewTracer("geopolitical-service")
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize tracer: %w", err)
+	}
 
 	// Initialize cache
-	cacheClient := cache.NewRedisCache(cfg.Redis.Host, cfg.Redis.Password, cfg.Redis.DB)
+	cacheClient := cache.NewCache(cfg.Redis.Host, cfg.Redis.Password, cfg.Redis.DB)
 
 	// Initialize database
 	dbManager, err := database.NewDatabase(&cfg.Database)
@@ -62,15 +63,13 @@ func NewContainer(cfg *config.Config, logger logging.Logger) (*Container, error)
 		return nil, fmt.Errorf("failed to auto-migrate models: %w", err)
 	}
 
-	// Initialize repositories
-	countryRepo := repositories.NewCountryRepositoryGORM(dbManager.DB, cacheClient, logger)
+	// Initialize repositories with validation
+	countryRepo := repositories.NewValidatedCountryRepository(dbManager.DB)
 	regionRepo := repositories.NewRegionRepository(dbManager.DB)
 	languageRepo := repositories.NewLanguageRepository(dbManager.DB)
 
 	// Initialize application services
 	countryAppService := applicationservices.NewCountryAppService(countryRepo, logger, tracer)
-	regionAppService := applicationservices.NewRegionAppService(regionRepo, logger.(*logging.StructuredLogger))
-	languageAppService := applicationservices.NewLanguageAppService(languageRepo, logger.(*logging.StructuredLogger))
 
 	return &Container{
 		Config:            cfg,
@@ -82,9 +81,7 @@ func NewContainer(cfg *config.Config, logger logging.Logger) (*Container, error)
 		CountryRepository: countryRepo,
 		CountryAppService: countryAppService,
 		RegionRepository:  regionRepo,
-		RegionAppService:  regionAppService,
 		LanguageRepository: languageRepo,
-		LanguageAppService: languageAppService,
 	}, nil
 }
 

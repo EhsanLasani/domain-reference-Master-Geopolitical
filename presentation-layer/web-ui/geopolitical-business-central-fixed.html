@@ -619,6 +619,12 @@
                 ribbon.classList.remove('hidden');
                 currentRibbon = ribbonType;
                 
+                // Show ribbon content
+                const ribbonContent = ribbon.querySelector('.nav-ribbon-content');
+                if (ribbonContent) {
+                    ribbonContent.style.display = 'flex';
+                }
+                
                 // Adjust main layout
                 const mainLayout = document.querySelector('.main-layout');
                 if (!isRibbonPinned) {
@@ -644,6 +650,21 @@
             
             const headerRow = config.columns.map(col => `<th>${col.label}</th>`).join('');
             document.getElementById('tableHeader').innerHTML = `<tr>${headerRow}</tr>`;
+            
+            // Hide ribbon content (navigation buttons) if unpinned after navigation
+            if (!isRibbonPinned) {
+                setTimeout(() => {
+                    const activeRibbon = document.getElementById(currentRibbon + 'Ribbon');
+                    if (activeRibbon) {
+                        const ribbonContent = activeRibbon.querySelector('.nav-ribbon-content');
+                        if (ribbonContent) {
+                            ribbonContent.style.display = 'none';
+                        }
+                    }
+                    const mainLayout = document.querySelector('.main-layout');
+                    mainLayout.classList.remove('ribbon-open');
+                }, 300);
+            }
             
             loadEntities();
         }

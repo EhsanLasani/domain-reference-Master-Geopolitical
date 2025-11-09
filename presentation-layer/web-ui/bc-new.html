@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LASANI Platform - Business Central</title>
+    <link rel="stylesheet" href="business-central.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Row 1: Business Central Header -->
+    <div class="bc-header-row1">
+        <div class="bc-header-left">
+            <div class="bc-app-menu">
+                <i class="fas fa-th"></i>
+            </div>
+            <span class="bc-app-title">Business Central</span>
+        </div>
+        <div class="bc-header-right">
+            <div class="bc-icons">
+                <button class="bc-icon-btn" title="Environment Production">
+                    <i class="fas fa-exclamation-triangle" style="color: #ff6b35;"></i>
+                </button>
+                <button class="bc-icon-btn" title="Help">
+                    <i class="fas fa-question-circle"></i>
+                </button>
+                <button class="bc-icon-btn" title="Search">
+                    <i class="fas fa-search"></i>
+                </button>
+                <button class="bc-icon-btn" title="Notifications">
+                    <i class="fas fa-bell"></i>
+                </button>
+                <button class="bc-icon-btn" title="Settings">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button class="bc-icon-btn" title="User">
+                    <i class="fas fa-user-circle"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 2: Tenant & Domain Navigation -->
+    <div class="bc-header-row2">
+        <div class="bc-tenant-info">
+            <span class="bc-tenant-name">LASANI PLATFORM</span>
+        </div>
+        <div class="bc-domain-nav">
+            <div class="bc-nav-item active" onclick="activateDomain(this, 'geopolitical')">
+                <span>Geopolitical</span>
+                <i class="fas fa-chevron-down"></i>
+                <div class="bc-submenu">
+                    <button class="bc-pin-btn" onclick="pinSubmenu(this, 'geopolitical')" title="Pin/Unpin Menu">
+                        <i class="fas fa-thumbtack"></i>
+                    </button>
+                    <div class="bc-nav-grid">
+                        <div class="bc-nav-box-full" onclick="switchEntity('countries'); event.stopPropagation();">
+                            <i class="fas fa-flag"></i>
+                            <span>Countries</span>
+                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'countries'); event.stopPropagation();" title="Pin/Unpin">
+                                <i class="fas fa-thumbtack"></i>
+                            </button>
+                        </div>
+                        <div class="bc-nav-box-full" onclick="switchEntity('languages'); event.stopPropagation();">
+                            <i class="fas fa-language"></i>
+                            <span>Languages</span>
+                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'languages'); event.stopPropagation();" title="Pin/Unpin">
+                                <i class="fas fa-thumbtack"></i>
+                            </button>
+                        </div>
+                        <div class="bc-nav-box-full" onclick="switchEntity('timezones'); event.stopPropagation();">
+                            <i class="fas fa-clock"></i>
+                            <span>Timezones</span>
+                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'timezones'); event.stopPropagation();" title="Pin/Unpin">
+                                <i class="fas fa-thumbtack"></i>
+                            </button>
+                        </div>
+                        <div class="bc-nav-box-full" onclick="switchEntity('subdivisions'); event.stopPropagation();">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Subdivisions</span>
+                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'subdivisions'); event.stopPropagation();" title="Pin/Unpin">
+                                <i class="fas fa-thumbtack"></i>
+                            </button>
+                        </div>
+                        <div class="bc-nav-box-full" onclick="switchEntity('locales'); event.stopPropagation();">
+                            <i class="fas fa-globe-americas"></i>
+                            <span>Locales</span>
+                            <button class="bc-nav-box-pin" onclick="pinNavBox(this, 'locales'); event.stopPropagation();" title="Pin/Unpin">
+                                <i class="fas fa-thumbtack"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 3: Entity Toolbar -->
+    <div class="bc-header-row3">
+        <div class="bc-entity-info">
+            <span class="bc-entity-name" id="current-entity">Countries</span>
+            <div class="bc-entity-actions">
+                <button class="bc-action-btn" onclick="addRecord()" title="New">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <button class="bc-action-btn" onclick="editRecord()" title="Edit">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="bc-action-btn" onclick="deleteRecord()" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <button class="bc-action-btn" onclick="refreshData()" title="Refresh">
+                    <i class="fas fa-sync"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Data Grid Area -->
+        <div class="data-area">
+            <div class="data-header">
+                <div class="breadcrumb">
+                    <span>Geopolitical Reference</span>
+                    <i class="fas fa-chevron-right"></i>
+                    <span class="current">Countries</span>
+                </div>
+            </div>
+
+            <!-- Data Grid -->
+            <div class="data-grid" id="data-grid">
+                <table class="grid-table">
+                    <thead>
+                        <tr>
+                            <th class="select-col">
+                                <input type="checkbox" id="select-all">
+                            </th>
+                            <th class="sortable" data-field="country_code">
+                                Code
+                                <i class="fas fa-sort"></i>
+                            </th>
+                            <th class="sortable" data-field="country_name">
+                                Name
+                                <i class="fas fa-sort"></i>
+                            </th>
+                            <th class="sortable" data-field="iso3_code">
+                                ISO3
+                                <i class="fas fa-sort"></i>
+                            </th>
+                            <th class="sortable" data-field="continent_code">
+                                Continent
+                                <i class="fas fa-sort"></i>
+                            </th>
+                            <th class="sortable" data-field="capital_city">
+                                Capital
+                                <i class="fas fa-sort"></i>
+                            </th>
+                            <th class="sortable" data-field="is_active">
+                                Status
+                                <i class="fas fa-sort"></i>
+                            </th>
+                            <th class="actions-col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="grid-body">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Loading Overlay -->
+            <div class="loading-overlay" id="loading-overlay">
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>Loading data...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="business-central.js"></script>
+</body>
+</html>

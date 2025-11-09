@@ -1,0 +1,129 @@
+type Query {
+  countries(filter: CountryFilter, pagination: PaginationInput): CountryConnection!
+  country(code: String!): Country
+  regions: [Region!]!
+  languages: [Language!]!
+  timezones(countryCode: String): [Timezone!]!
+}
+
+type Mutation {
+  createCountry(input: CreateCountryInput!): CreateCountryPayload!
+  updateCountry(code: String!, input: UpdateCountryInput!): UpdateCountryPayload!
+  deleteCountry(code: String!): DeleteCountryPayload!
+}
+
+type Country {
+  id: ID!
+  countryCode: String!
+  countryName: String!
+  iso3Code: String
+  officialName: String
+  capitalCity: String
+  continentCode: String
+  phonePrefix: String
+  isActive: Boolean!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Region {
+  id: ID!
+  regionCode: String!
+  regionName: String!
+  regionType: String!
+  isActive: Boolean!
+}
+
+type Language {
+  id: ID!
+  languageCode: String!
+  languageName: String!
+  iso3Code: String
+  nativeName: String
+  direction: String!
+  isActive: Boolean!
+}
+
+type Timezone {
+  id: ID!
+  timezoneCode: String!
+  timezoneName: String!
+  utcOffsetHours: Int!
+  utcOffsetMinutes: Int!
+  supportsDst: Boolean!
+  isActive: Boolean!
+}
+
+input CountryFilter {
+  isActive: Boolean
+  continentCode: String
+  search: String
+}
+
+input PaginationInput {
+  first: Int
+  after: String
+  last: Int
+  before: String
+}
+
+type CountryConnection {
+  edges: [CountryEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type CountryEdge {
+  node: Country!
+  cursor: String!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+input CreateCountryInput {
+  countryCode: String!
+  countryName: String!
+  iso3Code: String
+  officialName: String
+  capitalCity: String
+  continentCode: String
+  phonePrefix: String
+}
+
+input UpdateCountryInput {
+  countryName: String
+  iso3Code: String
+  officialName: String
+  capitalCity: String
+  continentCode: String
+  phonePrefix: String
+  isActive: Boolean
+}
+
+type CreateCountryPayload {
+  country: Country
+  success: Boolean!
+  errors: [Error!]
+}
+
+type UpdateCountryPayload {
+  country: Country
+  success: Boolean!
+  errors: [Error!]
+}
+
+type DeleteCountryPayload {
+  success: Boolean!
+  errors: [Error!]
+}
+
+type Error {
+  code: String!
+  message: String!
+  field: String
+}

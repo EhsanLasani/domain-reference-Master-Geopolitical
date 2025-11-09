@@ -10,10 +10,10 @@ import (
 
 type LanguageAppService struct {
 	languageRepo *repositories.LanguageRepository
-	logger       *logging.StructuredLogger
+	logger       logging.Logger
 }
 
-func NewLanguageAppService(languageRepo *repositories.LanguageRepository, logger *logging.StructuredLogger) *LanguageAppService {
+func NewLanguageAppService(languageRepo *repositories.LanguageRepository, logger logging.Logger) *LanguageAppService {
 	return &LanguageAppService{
 		languageRepo: languageRepo,
 		logger:       logger,

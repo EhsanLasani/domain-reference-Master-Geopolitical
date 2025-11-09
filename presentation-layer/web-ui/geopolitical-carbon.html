@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LASANI Platform - Geopolitical Reference</title>
+    <link rel="stylesheet" href="https://unpkg.com/carbon-components/css/carbon-components.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/carbon-components/scripts/carbon-components.min.js"></script>
+</head>
+<body class="bx--body">
+    <!-- Header -->
+    <header class="bx--header" role="banner">
+        <a class="bx--header__name" href="index.html">
+            <span class="bx--header__name--prefix">LASANI</span>
+            Platform
+        </a>
+        <nav class="bx--header__nav">
+            <ul class="bx--header__menu-bar">
+                <li><a class="bx--header__menu-item" href="index.html">Home</a></li>
+                <li><a class="bx--header__menu-item bx--header__menu-item--current" href="#">Geopolitical</a></li>
+                <li><a class="bx--header__menu-item" href="#">Commerce</a></li>
+                <li><a class="bx--header__menu-item" href="#">Tenants</a></li>
+                <li><a class="bx--header__menu-item" href="#">IAM</a></li>
+            </ul>
+        </nav>
+        <div class="bx--header__global">
+            <div class="bx--header__global__item">
+                <span class="bx--tag bx--tag--green">Default Tenant</span>
+            </div>
+            <div class="bx--header__global__item">
+                <span class="bx--tag bx--tag--blue">Admin</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <div class="bx--content">
+        <div class="bx--grid">
+            <div class="bx--row">
+                <div class="bx--col-lg-16">
+                    <!-- Page Header -->
+                    <div class="bx--page-header">
+                        <div class="bx--page-header__row">
+                            <div class="bx--page-header__title">
+                                <h1 class="bx--productive-heading-05">Geopolitical Reference</h1>
+                                <p class="bx--type-body-long-01">Countries, regions, languages, timezones, and localization master data</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Entity Navigation Tabs -->
+                    <div class="bx--tabs" data-tabs>
+                        <div class="bx--tabs-trigger" tabindex="0">
+                            <a href="javascript:void(0)" class="bx--tabs-trigger-text" tabindex="-1"></a>
+                            <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"></path></svg>
+                        </div>
+                        <ul class="bx--tabs__nav bx--tabs__nav--hidden" role="tablist">
+                            <li class="bx--tabs__nav-item bx--tabs__nav-item--selected" data-target=".tab-panel-countries" role="presentation">
+                                <a class="bx--tabs__nav-link" href="javascript:void(0)" role="tab" aria-controls="tab-panel-countries" aria-selected="true" tabindex="0">
+                                    <i class="fas fa-flag" style="margin-right: 8px;"></i>Countries
+                                </a>
+                            </li>
+                            <li class="bx--tabs__nav-item" data-target=".tab-panel-regions" role="presentation">
+                                <a class="bx--tabs__nav-link" href="javascript:void(0)" role="tab" aria-controls="tab-panel-regions" tabindex="-1">
+                                    <i class="fas fa-globe-americas" style="margin-right: 8px;"></i>Regions
+                                </a>
+                            </li>
+                            <li class="bx--tabs__nav-item" data-target=".tab-panel-languages" role="presentation">
+                                <a class="bx--tabs__nav-link" href="javascript:void(0)" role="tab" aria-controls="tab-panel-languages" tabindex="-1">
+                                    <i class="fas fa-language" style="margin-right: 8px;"></i>Languages
+                                </a>
+                            </li>
+                            <li class="bx--tabs__nav-item" data-target=".tab-panel-timezones" role="presentation">
+                                <a class="bx--tabs__nav-link" href="javascript:void(0)" role="tab" aria-controls="tab-panel-timezones" tabindex="-1">
+                                    <i class="fas fa-clock" style="margin-right: 8px;"></i>Timezones
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Countries Tab Panel -->
+                    <div class="tab-panel-countries bx--tab-content" id="tab-panel-countries" role="tabpanel" aria-labelledby="tab-countries" aria-hidden="false">
+                        <!-- Toolbar -->
+                        <div class="bx--toolbar">
+                            <div class="bx--toolbar-content">
+                                <div class="bx--toolbar-search-container-expandable">
+                                    <div class="bx--search bx--search--sm" data-search role="search">
+                                        <div class="bx--search-magnifier">
+                                            <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M15,14.3L10.7,10c1.9-2.3,1.6-5.8-0.7-7.7S4.2,0.7,2.3,3S0.7,8.8,3,10.7c2,1.7,5,1.7,7,0l4.3,4.3L15,14.3z M2,6.5 C2,4,4,2,6.5,2S11,4,11,6.5S9,11,6.5,11S2,9,2,6.5z"></path></svg>
+                                        </div>
+                                        <input class="bx--search-input" type="text" id="search-countries" placeholder="Search countries..." role="searchbox">
+                                        <button class="bx--search-close bx--search-close--hidden" title="Clear search input" aria-label="Clear search input" type="button">
+                                            <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M12 4.7L11.3 4 8 7.3 4.7 4 4 4.7 7.3 8 4 11.3 4.7 12 8 8.7 11.3 12 12 11.3 8.7 8z"></path></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="bx--toolbar-action">
+                                    <button class="bx--btn bx--btn--primary bx--btn--sm" type="button" onclick="addCountry()">
+                                        <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" class="bx--btn__icon"><path d="M8 1C8.6 1 9 1.4 9 2L9 7 14 7C14.6 7 15 7.4 15 8 15 8.6 14.6 9 14 9L9 9 9 14C9 14.6 8.6 15 8 15 7.4 15 7 14.6 7 14L7 9 2 9C1.4 9 1 8.6 1 8 1 7.4 1.4 7 2 7L7 7 7 2C7 1.4 7.4 1 8 1Z"></path></svg>
+                                        Add Country
+                                    </button>
+                                </div>
+                                <div class="bx--toolbar-action">
+                                    <button class="bx--btn bx--btn--secondary bx--btn--sm" type="button" onclick="refreshData()">
+                                        <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" class="bx--btn__icon"><path d="M8 1C4.1 1 1 4.1 1 8s3.1 7 7 7c1.9 0 3.7-.8 4.9-2.1l-1.4-1.4C10.3 12.4 9.2 13 8 13c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5h-2l3 3 3-3h-2c0-3.9-3.1-7-7-7z"></path></svg>
+                                        Refresh
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Table -->
+                        <div class="bx--data-table-container" data-table>
+                            <table class="bx--data-table bx--data-table--zebra">
+                                <thead>
+                                    <tr>
+                                        <th class="bx--table-column-checkbox">
+                                            <input class="bx--checkbox" type="checkbox" id="select-all" name="select-all">
+                                            <label for="select-all" class="bx--checkbox-label" aria-label="Select all rows"></label>
+                                        </th>
+                                        <th class="bx--table-header">Code</th>
+                                        <th class="bx--table-header">Name</th>
+                                        <th class="bx--table-header">ISO3</th>
+                                        <th class="bx--table-header">Continent</th>
+                                        <th class="bx--table-header">Capital</th>
+                                        <th class="bx--table-header">Status</th>
+                                        <th class="bx--table-header">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="countries-table-body">
+                                    <!-- Dynamic content loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Loading State -->
+                        <div id="loading-state" class="bx--loading-overlay" style="display: none;">
+                            <div class="bx--loading">
+                                <svg class="bx--loading__svg" viewBox="-75 -75 150 150">
+                                    <circle class="bx--loading__stroke" cx="0" cy="0" r="37.5" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Other Tab Panels (Regions, Languages, Timezones) -->
+                    <div class="tab-panel-regions bx--tab-content" id="tab-panel-regions" role="tabpanel" aria-hidden="true">
+                        <p class="bx--type-body-long-01">Regions data will be displayed here.</p>
+                    </div>
+                    <div class="tab-panel-languages bx--tab-content" id="tab-panel-languages" role="tabpanel" aria-hidden="true">
+                        <p class="bx--type-body-long-01">Languages data will be displayed here.</p>
+                    </div>
+                    <div class="tab-panel-timezones bx--tab-content" id="tab-panel-timezones" role="tabpanel" aria-hidden="true">
+                        <p class="bx--type-body-long-01">Timezones data will be displayed here.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="bx--modal" id="country-modal" tabindex="-1" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
+        <div class="bx--modal-container">
+            <div class="bx--modal-header">
+                <p class="bx--modal-header__label bx--type-delta">Geopolitical Reference</p>
+                <p class="bx--modal-header__heading bx--type-beta" id="modal-title">Add Country</p>
+                <button class="bx--modal-close" type="button" data-modal-close aria-label="Close modal">
+                    <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M24 9.4L22.6 8 16 14.6 9.4 8 8 9.4 14.6 16 8 22.6 9.4 24 16 17.4 22.6 24 24 22.6 17.4 16 24 9.4z"></path></svg>
+                </button>
+            </div>
+            <div class="bx--modal-content">
+                <form id="country-form">
+                    <div class="bx--form-item">
+                        <label for="country-code" class="bx--label">Country Code *</label>
+                        <input id="country-code" type="text" class="bx--text-input" maxlength="2" required>
+                    </div>
+                    <div class="bx--form-item">
+                        <label for="country-name" class="bx--label">Country Name *</label>
+                        <input id="country-name" type="text" class="bx--text-input" maxlength="100" required>
+                    </div>
+                    <div class="bx--form-item">
+                        <label for="iso3-code" class="bx--label">ISO3 Code</label>
+                        <input id="iso3-code" type="text" class="bx--text-input" maxlength="3">
+                    </div>
+                    <div class="bx--form-item">
+                        <label for="continent-code" class="bx--label">Continent</label>
+                        <div class="bx--select">
+                            <select id="continent-code" class="bx--select-input">
+                                <option value="">Select continent...</option>
+                                <option value="AF">Africa</option>
+                                <option value="AS">Asia</option>
+                                <option value="EU">Europe</option>
+                                <option value="NA">North America</option>
+                                <option value="SA">South America</option>
+                                <option value="OC">Oceania</option>
+                                <option value="AN">Antarctica</option>
+                            </select>
+                            <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" class="bx--select__arrow"><path d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"></path></svg>
+                        </div>
+                    </div>
+                    <div class="bx--form-item">
+                        <label for="capital-city" class="bx--label">Capital City</label>
+                        <input id="capital-city" type="text" class="bx--text-input" maxlength="100">
+                    </div>
+                </form>
+            </div>
+            <div class="bx--modal-footer">
+                <button class="bx--btn bx--btn--secondary" type="button" data-modal-close>Cancel</button>
+                <button class="bx--btn bx--btn--primary" type="button" onclick="saveCountry()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let countries = [];
+        let editingCountry = null;
+
+        // Initialize Carbon components
+        document.addEventListener('DOMContentLoaded', function() {
+            CarbonComponents.Tabs.init();
+            CarbonComponents.Modal.init();
+            CarbonComponents.Search.init();
+            loadCountries();
+        });
+
+        // Load countries data
+        async function loadCountries() {
+            showLoading(true);
+            try {
+                const response = await fetch('/api/v1/countries');
+                const data = await response.json();
+                countries = data.countries || [];
+                renderCountriesTable();
+            } catch (error) {
+                console.error('Error loading countries:', error);
+                showNotification('Error loading countries data', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Render countries table
+        function renderCountriesTable() {
+            const tbody = document.getElementById('countries-table-body');
+            tbody.innerHTML = '';
+
+            countries.forEach(country => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="bx--table-column-checkbox">
+                        <input class="bx--checkbox" type="checkbox" id="select-${country.country_code}" name="select-${country.country_code}">
+                        <label for="select-${country.country_code}" class="bx--checkbox-label" aria-label="Select row"></label>
+                    </td>
+                    <td class="bx--table-cell">${country.country_code}</td>
+                    <td class="bx--table-cell editable" data-field="country_name" data-code="${country.country_code}">${country.country_name}</td>
+                    <td class="bx--table-cell editable" data-field="iso3_code" data-code="${country.country_code}">${country.iso3_code || ''}</td>
+                    <td class="bx--table-cell editable" data-field="continent_code" data-code="${country.country_code}">${country.continent_code || ''}</td>
+                    <td class="bx--table-cell editable" data-field="capital_city" data-code="${country.country_code}">${country.capital_city || ''}</td>
+                    <td class="bx--table-cell">
+                        <span class="bx--tag ${country.is_active ? 'bx--tag--green' : 'bx--tag--red'}">
+                            ${country.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                    </td>
+                    <td class="bx--table-cell">
+                        <button class="bx--btn bx--btn--ghost bx--btn--sm" onclick="editCountry('${country.country_code}')" title="Edit">
+                            <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M7.5 11L9 9.5l-4.5-4.5L3 6.5 7.5 11zM1 14h2.5L14 3.5 11.5 1 1 11.5V14z"></path></svg>
+                        </button>
+                        <button class="bx--btn bx--btn--ghost bx--btn--sm" onclick="toggleCountryStatus('${country.country_code}', ${!country.is_active})" title="${country.is_active ? 'Deactivate' : 'Activate'}">
+                            <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1C4.1 1 1 4.1 1 8s3.1 7 7 7 7-3.1 7-7-3.1-7-7-7zM8 13c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5z"></path></svg>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Add inline editing
+            addInlineEditing();
+        }
+
+        // Add inline editing functionality
+        function addInlineEditing() {
+            document.querySelectorAll('.editable').forEach(cell => {
+                cell.addEventListener('dblclick', function() {
+                    const field = this.dataset.field;
+                    const code = this.dataset.code;
+                    const currentValue = this.textContent.trim();
+                    
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = currentValue;
+                    input.className = 'bx--text-input bx--text-input--sm';
+                    input.style.width = '100%';
+                    
+                    input.addEventListener('blur', () => saveInlineEdit(cell, input, field, code));
+                    input.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            saveInlineEdit(cell, input, field, code);
+                        }
+                    });
+                    
+                    this.innerHTML = '';
+                    this.appendChild(input);
+                    input.focus();
+                });
+            });
+        }
+
+        // Save inline edit
+        async function saveInlineEdit(cell, input, field, code) {
+            const newValue = input.value.trim();
+            const updateData = {};
+            updateData[field] = newValue;
+            
+            // Get current country data
+            const country = countries.find(c => c.country_code === code);
+            Object.assign(updateData, country);
+            updateData[field] = newValue;
+            
+            try {
+                const response = await fetch(`/api/v1/countries/${code}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateData)
+                });
+                
+                if (response.ok) {
+                    cell.textContent = newValue;
+                    showNotification('Country updated successfully', 'success');
+                    loadCountries(); // Refresh data
+                } else {
+                    throw new Error('Update failed');
+                }
+            } catch (error) {
+                cell.textContent = cell.dataset.originalValue || '';
+                showNotification('Error updating country', 'error');
+            }
+        }
+
+        // Add country
+        function addCountry() {
+            editingCountry = null;
+            document.getElementById('modal-title').textContent = 'Add Country';
+            document.getElementById('country-form').reset();
+            document.getElementById('country-code').disabled = false;
+            CarbonComponents.Modal.create(document.getElementById('country-modal')).show();
+        }
+
+        // Edit country
+        function editCountry(code) {
+            editingCountry = countries.find(c => c.country_code === code);
+            if (!editingCountry) return;
+            
+            document.getElementById('modal-title').textContent = 'Edit Country';
+            document.getElementById('country-code').value = editingCountry.country_code;
+            document.getElementById('country-code').disabled = true;
+            document.getElementById('country-name').value = editingCountry.country_name;
+            document.getElementById('iso3-code').value = editingCountry.iso3_code || '';
+            document.getElementById('continent-code').value = editingCountry.continent_code || '';
+            document.getElementById('capital-city').value = editingCountry.capital_city || '';
+            
+            CarbonComponents.Modal.create(document.getElementById('country-modal')).show();
+        }
+
+        // Save country
+        async function saveCountry() {
+            const formData = {
+                country_code: document.getElementById('country-code').value.toUpperCase(),
+                country_name: document.getElementById('country-name').value,
+                iso3_code: document.getElementById('iso3-code').value.toUpperCase() || null,
+                continent_code: document.getElementById('continent-code').value || null,
+                capital_city: document.getElementById('capital-city').value || null,
+                is_active: true
+            };
+
+            try {
+                const url = editingCountry ? `/api/v1/countries/${editingCountry.country_code}` : '/api/v1/countries';
+                const method = editingCountry ? 'PUT' : 'POST';
+                
+                if (editingCountry) {
+                    Object.assign(formData, editingCountry);
+                    formData.country_name = document.getElementById('country-name').value;
+                    formData.iso3_code = document.getElementById('iso3-code').value || null;
+                    formData.continent_code = document.getElementById('continent-code').value || null;
+                    formData.capital_city = document.getElementById('capital-city').value || null;
+                }
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    CarbonComponents.Modal.create(document.getElementById('country-modal')).hide();
+                    showNotification(`Country ${editingCountry ? 'updated' : 'created'} successfully`, 'success');
+                    loadCountries();
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.error?.message || 'Save failed');
+                }
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Toggle country status
+        async function toggleCountryStatus(code, newStatus) {
+            const country = countries.find(c => c.country_code === code);
+            if (!country) return;
+
+            const updateData = Object.assign({}, country);
+            updateData.is_active = newStatus;
+
+            try {
+                const response = await fetch(`/api/v1/countries/${code}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateData)
+                });
+
+                if (response.ok) {
+                    showNotification(`Country ${newStatus ? 'activated' : 'deactivated'} successfully`, 'success');
+                    loadCountries();
+                } else {
+                    throw new Error('Status update failed');
+                }
+            } catch (error) {
+                showNotification('Error updating country status', 'error');
+            }
+        }
+
+        // Refresh data
+        function refreshData() {
+            loadCountries();
+        }
+
+        // Show loading state
+        function showLoading(show) {
+            document.getElementById('loading-state').style.display = show ? 'block' : 'none';
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            // Simple notification - could be enhanced with Carbon notification component
+            const notification = document.createElement('div');
+            notification.className = `bx--toast-notification bx--toast-notification--${type === 'error' ? 'error' : 'success'}`;
+            notification.style.position = 'fixed';
+            notification.style.top = '20px';
+            notification.style.right = '20px';
+            notification.style.zIndex = '9999';
+            notification.innerHTML = `
+                <div class="bx--toast-notification__details">
+                    <h3 class="bx--toast-notification__title">${type === 'error' ? 'Error' : 'Success'}</h3>
+                    <p class="bx--toast-notification__subtitle">${message}</p>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
